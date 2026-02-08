@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { UserRole, Doctor, Clinic, Medicine, LabTest } from './types';
-import { DOCTORS, CLINICS, MEDICINES, LAB_TESTS, DISTRICTS } from './constants';
+import { DOCTORS, CLINICS, MEDICINES, LAB_TESTS, DISTRICTS, ABOUT_US_DATA, APP_VIDEOS } from './constants';
 import { gemini } from './services/geminiService';
 import { supabase } from './services/supabaseClient';
 
@@ -61,6 +61,29 @@ const Input: React.FC<{
 );
 
 // --- Sub-components ---
+
+const VideoCard: React.FC<{ video: typeof APP_VIDEOS[0] }> = ({ video }) => (
+  <Card className="overflow-hidden group flex flex-col h-full cursor-pointer hover:border-blue-400">
+    <div className="relative aspect-video">
+      <img src={video.thumbnail} alt={video.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+      <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-blue-600 shadow-xl">
+           <svg className="w-6 h-6 ml-1" fill="currentColor" viewBox="0 0 20 20"><path d="M4.5 3.5l11 6.5-11 6.5z"/></svg>
+        </div>
+      </div>
+      <div className="absolute bottom-2 right-2 bg-black/80 text-[8px] font-black text-white px-2 py-1 rounded-md uppercase tracking-widest">
+        Watch on YouTube
+      </div>
+    </div>
+    <div className="p-4 flex-1 flex flex-col">
+      <h3 className="font-bold text-slate-800 text-sm line-clamp-1">{video.title}</h3>
+      <p className="text-[10px] text-slate-500 mt-2 line-clamp-2 leading-relaxed">{video.description}</p>
+      <div className="mt-auto pt-4 flex items-center text-blue-600 font-black text-[9px] uppercase tracking-widest">
+        প্লে করুন <svg className="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7"/></svg>
+      </div>
+    </div>
+  </Card>
+);
 
 const HospitalCard: React.FC<{ hospital: Clinic }> = ({ hospital }) => (
   <Card className="overflow-hidden group">
@@ -163,6 +186,7 @@ export default function App() {
   // Search States
   const [directorySearch, setDirectorySearch] = useState('');
   const [healthSearch, setHealthSearch] = useState('');
+  const [selectedSpecialty, setSelectedSpecialty] = useState('All');
   
   const [selectedDistrict, setSelectedDistrict] = useState('Dhaka');
   const [showSubscription, setShowSubscription] = useState(false);
@@ -195,6 +219,9 @@ export default function App() {
   // Doctor Availability Mock State
   const [isDoctorAvailable, setIsDoctorAvailable] = useState(true);
   const [doctorSchedule, setDoctorSchedule] = useState('Sat-Thu: 5 PM - 9 PM');
+
+  // Specialties Extraction
+  const specialties = useMemo(() => ['All', ...Array.from(new Set(DOCTORS.map(d => d.specialty)))], []);
 
   // Initial Auth Sync
   useEffect(() => {
@@ -340,12 +367,14 @@ export default function App() {
   }, [selectedDistrict, directorySearch]);
 
   const filteredDoctors = useMemo(() => {
-    return DOCTORS.filter(d => 
-      d.name.toLowerCase().includes(directorySearch.toLowerCase()) ||
-      d.specialty.toLowerCase().includes(directorySearch.toLowerCase()) ||
-      d.degree.toLowerCase().includes(directorySearch.toLowerCase())
-    );
-  }, [directorySearch]);
+    return DOCTORS.filter(d => {
+      const matchesSearch = d.name.toLowerCase().includes(directorySearch.toLowerCase()) ||
+                            d.specialty.toLowerCase().includes(directorySearch.toLowerCase()) ||
+                            d.degree.toLowerCase().includes(directorySearch.toLowerCase());
+      const matchesSpecialty = selectedSpecialty === 'All' || d.specialty === selectedSpecialty;
+      return matchesSearch && matchesSpecialty;
+    });
+  }, [directorySearch, selectedSpecialty]);
 
   // AI Health Assistant (Search Bar 2)
   const handleAIHealthSearch = async () => {
@@ -436,7 +465,7 @@ export default function App() {
         {(role === UserRole.PATIENT || !role) && (
           <div className="space-y-8 page-transition">
             
-            {/* SEARCH SECTION: TWO SEARCH BARS */}
+            {/* SEARCH SECTION: TWO SEARCH BARS (HOME TAB ONLY) */}
             {activeTab === 'home' && (
               <section className="space-y-6">
                 
@@ -499,7 +528,7 @@ export default function App() {
               </section>
             )}
 
-            {/* Dashboards based on Tabs */}
+            {/* Home Tab Content */}
             {activeTab === 'home' && (
               <div className="space-y-10">
                 <section>
@@ -507,11 +536,25 @@ export default function App() {
                     <h2 className="text-lg font-black text-slate-800">বিশেষজ্ঞগণ</h2>
                     {directorySearch && <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-1 rounded-lg font-black uppercase tracking-widest">ফলাফল: {filteredDoctors.length}</span>}
                   </div>
+                  
+                  {/* Specialty Filter List */}
+                  <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2 mb-6 -mx-1 px-1">
+                    {specialties.map(s => (
+                      <button
+                        key={s}
+                        onClick={() => setSelectedSpecialty(s)}
+                        className={`px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all active:scale-95 ${selectedSpecialty === s ? 'bg-blue-600 text-white shadow-lg shadow-blue-200' : 'bg-white text-slate-400 border border-slate-100 hover:border-blue-200'}`}
+                      >
+                        {s === 'All' ? 'সব বিভাগ' : s}
+                      </button>
+                    ))}
+                  </div>
+
                   <div className="space-y-4">
-                    {(directorySearch ? filteredDoctors : DOCTORS.filter(d => d.availableToday)).slice(0, 5).map(doc => (
+                    {filteredDoctors.slice(0, 10).map(doc => (
                       <DoctorCard key={doc.id} doctor={doc} onConsult={startConsultation} isLoggedIn={!!user} />
                     ))}
-                    {directorySearch && filteredDoctors.length === 0 && <p className="text-center text-slate-400 py-6 text-xs italic">কোন ডাক্তার পাওয়া যায়নি</p>}
+                    {filteredDoctors.length === 0 && <p className="text-center text-slate-400 py-10 text-xs italic">কোন ডাক্তার পাওয়া যায়নি</p>}
                   </div>
                 </section>
 
@@ -533,6 +576,77 @@ export default function App() {
                   </div>
                   {directorySearch && filteredClinics.length === 0 && <p className="text-center text-slate-400 py-6 text-xs italic">এই এরিয়ায় কোন হাসপাতাল পাওয়া যায়নি</p>}
                 </section>
+              </div>
+            )}
+
+            {/* Video Tab Content */}
+            {activeTab === 'videos' && (
+              <div className="space-y-8 py-4 page-transition">
+                <section className="bg-blue-600 p-8 rounded-[40px] text-white relative overflow-hidden">
+                   <h2 className="text-2xl font-black relative z-10 tracking-tight">ভিডিও গাইড</h2>
+                   <p className="text-[10px] opacity-80 mt-2 font-black uppercase tracking-widest relative z-10">অ্যাপ ব্যবহারের নিয়ম ও স্বাস্থ্য টিপস</p>
+                   <div className="absolute -right-10 -bottom-10 w-48 h-48 bg-white/10 rounded-full blur-3xl"></div>
+                </section>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  {APP_VIDEOS.map(video => (
+                    <div key={video.id} onClick={() => window.open(`https://www.youtube.com/watch?v=${video.youtubeId}`, '_blank')}>
+                      <VideoCard video={video} />
+                    </div>
+                  ))}
+                </div>
+
+                <Card className="p-8 bg-slate-900 text-white text-center border-none">
+                  <h4 className="text-base font-black mb-2 italic">আরো তথ্যের জন্য</h4>
+                  <p className="text-[10px] opacity-60 uppercase tracking-[0.2em] font-bold">আমাদের অফিশিয়াল ইউটিউব চ্যানেল সাবস্ক্রাইব করুন</p>
+                  <Button variant="danger" className="mt-6 mx-auto px-10 text-[10px]" onClick={() => window.open('https://youtube.com', '_blank')}>
+                    Subscribe to YouTube
+                  </Button>
+                </Card>
+              </div>
+            )}
+
+            {/* About Us Tab Content */}
+            {activeTab === 'about' && (
+              <div className="space-y-8 py-4 page-transition">
+                <section className="bg-slate-900 p-8 rounded-[40px] text-white relative overflow-hidden text-center">
+                  <h2 className="text-2xl font-black relative z-10 tracking-tight">আমাদের সম্পর্কে</h2>
+                  <p className="text-[10px] opacity-60 mt-2 font-bold uppercase tracking-widest relative z-10">JB Healthcare - আপনার স্বাস্থ্য আমাদের অগ্রাধিকার</p>
+                  <div className="absolute -left-10 -top-10 w-40 h-40 bg-blue-600/20 rounded-full blur-3xl"></div>
+                </section>
+
+                <div className="space-y-6">
+                  <Card className="p-8 border-l-4 border-l-blue-600">
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-2xl shadow-sm">🎯</div>
+                      <h3 className="text-xl font-black text-slate-800 tracking-tight">আমাদের মিশন</h3>
+                    </div>
+                    <p className="text-sm text-slate-600 leading-relaxed font-medium">{ABOUT_US_DATA.mission}</p>
+                  </Card>
+
+                  <Card className="p-8 border-l-4 border-l-indigo-600">
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-2xl shadow-sm">🚀</div>
+                      <h3 className="text-xl font-black text-slate-800 tracking-tight">আমাদের ভিশন</h3>
+                    </div>
+                    <p className="text-sm text-slate-600 leading-relaxed font-medium">{ABOUT_US_DATA.vision}</p>
+                  </Card>
+
+                  <section className="space-y-4 pt-4">
+                    <h3 className="text-lg font-black text-slate-800 tracking-tight ml-2">আমাদের টিম</h3>
+                    <div className="grid grid-cols-1 gap-4">
+                      {ABOUT_US_DATA.team.map((member, i) => (
+                        <Card key={i} className="p-4 flex items-center gap-4 group hover:border-blue-200">
+                          <img src={member.image} alt={member.name} className="w-16 h-16 rounded-2xl object-cover ring-4 ring-slate-50 group-hover:scale-105 transition-transform" />
+                          <div>
+                            <h4 className="font-bold text-slate-800 text-base">{member.name}</h4>
+                            <p className="text-[10px] text-blue-600 font-black uppercase tracking-widest mt-0.5">{member.role}</p>
+                          </div>
+                        </Card>
+                      ))}
+                    </div>
+                  </section>
+                </div>
               </div>
             )}
 
@@ -582,7 +696,7 @@ export default function App() {
                       
                       <div className="mt-10 w-full space-y-4">
                           <Button variant="outline" className="w-full text-xs py-5" onClick={() => setProfileSubTab('appointments')}>
-                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v12a2 2 0 002 2z"/></svg>
+                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                             আমার অ্যাপয়েন্টমেন্টসমূহ
                           </Button>
                           <Button variant="outline" className="w-full text-xs py-5" onClick={() => setProfileSubTab('orders')}>
@@ -891,7 +1005,7 @@ export default function App() {
       {/* Modern Role-Based Login/Register Modal */}
       {showLoginModal && (
         <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-lg flex items-center justify-center p-6 animate-in fade-in duration-300">
-          <div className="w-full max-sm bg-white rounded-[48px] shadow-2xl p-8 border border-white animate-in zoom-in duration-300 relative overflow-hidden">
+          <div className="w-full max-w-sm bg-white rounded-[48px] shadow-2xl p-8 border border-white animate-in zoom-in duration-300 relative overflow-hidden">
             
             <div className="flex justify-between items-start mb-8">
               <div className="w-16 h-16 bg-blue-600 rounded-[24px] flex items-center justify-center shadow-xl shadow-blue-200">
@@ -1066,20 +1180,22 @@ export default function App() {
 
       {/* Navigation Footer (Visible for Patient/Guest) */}
       {(role === UserRole.PATIENT || !role) && (
-      <nav className="fixed bottom-6 left-6 right-6 z-50 max-w-lg mx-auto bg-slate-900/90 backdrop-blur-2xl flex items-center justify-around py-5 px-6 rounded-[36px] shadow-2xl ring-1 ring-white/10 animate-in slide-in-from-bottom duration-700">
+      <nav className="fixed bottom-6 left-6 right-6 z-50 max-w-lg mx-auto bg-slate-900/90 backdrop-blur-2xl flex items-center justify-around py-5 px-3 rounded-[36px] shadow-2xl ring-1 ring-white/10 animate-in slide-in-from-bottom duration-700 overflow-hidden">
         {[
             { id: 'home', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6', label: 'হোম' },
             { id: 'clinics', icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4', label: 'ক্লিনিক' },
             { id: 'pharmacy', icon: 'M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z', label: 'শপ' },
+            { id: 'videos', icon: 'M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z M21 12a9 9 0 11-18 0 9 9 0 0118 0z', label: 'ভিডিও' },
+            { id: 'about', icon: 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z', label: 'তথ্য' },
             { id: 'profile', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z', label: 'প্রোফাইল' }
         ].map(item => (
             <button 
                 key={item.id}
                 onClick={() => { setActiveTab(item.id); setProfileSubTab('overview'); }}
-                className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${activeTab === item.id ? 'text-blue-400 scale-110' : 'text-slate-500 hover:text-slate-300'}`}
+                className={`flex flex-col items-center gap-1 transition-all duration-300 ${activeTab === item.id ? 'text-blue-400 scale-110' : 'text-slate-500 hover:text-slate-300'}`}
             >
-                <svg className="w-6 h-6" fill={activeTab === item.id ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d={item.icon}/></svg>
-                <span className={`text-[8px] font-black uppercase tracking-widest leading-none ${activeTab === item.id ? 'opacity-100' : 'opacity-0'}`}>{item.label}</span>
+                <svg className="w-5 h-5" fill={activeTab === item.id ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d={item.icon}/></svg>
+                <span className={`text-[7px] font-black uppercase tracking-widest leading-none ${activeTab === item.id ? 'opacity-100' : 'opacity-60'}`}>{item.label}</span>
             </button>
         ))}
       </nav>

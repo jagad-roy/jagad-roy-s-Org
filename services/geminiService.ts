@@ -2,15 +2,23 @@
 import { GoogleGenAI } from "@google/genai";
 
 export class GeminiService {
-  private ai: GoogleGenAI;
+  private ai: GoogleGenAI | null = null;
 
   constructor() {
-    this.ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    // Safely attempt to initialize Gemini
+    const apiKey = typeof process !== 'undefined' && process.env ? process.env.API_KEY : '';
+    if (apiKey) {
+      this.ai = new GoogleGenAI({ apiKey });
+    }
   }
 
   async consultHealth(query: string) {
+    if (!this.ai) {
+      console.warn("Gemini API Key is missing. AI features disabled.");
+      return "দুঃখিত, এআই সার্ভিস কনফিগার করা হয়নি। অনুগ্রহ করে পরে চেষ্টা করুন।";
+    }
+
     try {
-      // Use gemini-3-pro-preview for more detailed medical reasoning
       const response = await this.ai.models.generateContent({
         model: 'gemini-3-pro-preview',
         contents: `As a professional medical AI assistant for JB Healthcare, answer this query in Bengali: "${query}". 
@@ -35,6 +43,8 @@ export class GeminiService {
   }
 
   async summarizePrescription(prescriptionText: string) {
+    if (!this.ai) return "এআই সার্ভিস পাওয়া যাচ্ছে না।";
+    
     try {
       const response = await this.ai.models.generateContent({
         model: 'gemini-3-flash-preview',

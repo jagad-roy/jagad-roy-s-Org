@@ -3,6 +3,40 @@ import { Doctor, Clinic, Medicine, LabTest } from './types';
 
 export const DISTRICTS = ['Dhaka', 'Chattogram', 'Sylhet', 'Rajshahi', 'Khulna'];
 
+export const ABOUT_US_DATA = {
+  mission: "আমাদের লক্ষ্য হলো প্রযুক্তির মাধ্যমে স্বাস্থ্যসেবাকে বাংলাদেশের প্রতিটি মানুষের দোরগোড়ায় পৌঁছে দেওয়া। আমরা চাই একটি সুস্থ ও সমৃদ্ধ বাংলাদেশ গড়ে তুলতে যেখানে চিকিৎসা পাওয়া হবে সহজ ও দ্রুত।",
+  vision: "জেবি হেলথকেয়ার হবে প্রতিটি পরিবারের বিশ্বস্ত ডিজিটাল স্বাস্থ্য সঙ্গী, যেখানে ভিডিও কনসালটেশন থেকে শুরু করে মেডিসিন ডেলিভারি পর্যন্ত সব সেবা মিলবে এক ছাদের নিচে।",
+  team: [
+    { name: "জগদীশ রায়", role: "প্রতিষ্ঠাতা ও সিইও", image: "https://picsum.photos/100/100?u=1" },
+    { name: "ডাঃ রফিকুল ইসলাম", role: "প্রধান চিকিৎসা উপদেষ্টা", image: "https://picsum.photos/100/100?u=2" },
+    { name: "নাসরিন সুলতানা", role: "অপারেশনস ম্যানেজার", image: "https://picsum.photos/100/100?u=3" }
+  ]
+};
+
+export const APP_VIDEOS = [
+  {
+    id: "v1",
+    title: "জেবি হেলথকেয়ার অ্যাপ পরিচিতি",
+    description: "কীভাবে অ্যাপটি ডাউনলোড করবেন এবং একাউন্ট খুলবেন তার পূর্ণাঙ্গ গাইড।",
+    youtubeId: "dQw4w9WgXcQ", // Example ID, replace with actual
+    thumbnail: "https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg"
+  },
+  {
+    id: "v2",
+    title: "কীভাবে ডাক্তার বুক করবেন?",
+    description: "বিশেষজ্ঞ ডাক্তারের সাথে ভিডিও কনসালটেশন বুক করার নিয়মাবলি।",
+    youtubeId: "dQw4w9WgXcQ",
+    thumbnail: "https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg"
+  },
+  {
+    id: "v3",
+    title: "মেডিসিন অর্ডার করার সহজ পদ্ধতি",
+    description: "প্রেসক্রিপশন আপলোড করে কীভাবে ঘরে বসে ঔষধ পাবেন দেখে নিন।",
+    youtubeId: "dQw4w9WgXcQ",
+    thumbnail: "https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg"
+  }
+];
+
 export const MEDICINES: Medicine[] = [
   { id: 'm1', name: 'Napa Extend', price: 20, discount: 5, image: 'https://picsum.photos/200/200?random=1', description: 'Paracetamol for pain relief' },
   { id: 'm2', name: 'Seclo 20', price: 150, discount: 10, image: 'https://picsum.photos/200/200?random=2', description: 'Omeprazole for acidity' },
@@ -19,23 +53,14 @@ export const LAB_TESTS: LabTest[] = [
 
 // 25+ Clinics
 export const CLINICS: Clinic[] = [
-  // Dhaka
   { id: 'c1', name: 'Dhaka General Hospital', district: 'Dhaka', address: 'Dhanmondi, Dhaka', doctors: ['d1', 'd2'], image: 'https://picsum.photos/400/300?hospital=1' },
   { id: 'c2', name: 'Care Medical Center', district: 'Dhaka', address: 'Mirpur, Dhaka', doctors: ['d3'], image: 'https://picsum.photos/400/300?hospital=2' },
   { id: 'c3', name: 'Labaid Specialized', district: 'Dhaka', address: 'Uttara, Dhaka', doctors: ['d4', 'd5'], image: 'https://picsum.photos/400/300?hospital=3' },
   { id: 'c4', name: 'Square Hospital', district: 'Dhaka', address: 'Panthapath, Dhaka', doctors: ['d1', 'd6'], image: 'https://picsum.photos/400/300?hospital=4' },
   { id: 'c5', name: 'Evercare Dhaka', district: 'Dhaka', address: 'Bashundhara, Dhaka', doctors: ['d2', 'd7'], image: 'https://picsum.photos/400/300?hospital=5' },
-  // Chattogram
-  { id: 'c6', name: 'Ctg Metro Hospital', district: 'Chattogram', address: 'GEC Circle', doctors: ['d8'], image: 'https://picsum.photos/400/300?hospital=6' },
-  { id: 'c7', name: 'Chattogram Medical', district: 'Chattogram', address: 'Panchlaish', doctors: ['d9'], image: 'https://picsum.photos/400/300?hospital=7' },
-  { id: 'c8', name: 'Parkview Hospital', district: 'Chattogram', address: 'Katalganj', doctors: ['d10'], image: 'https://picsum.photos/400/300?hospital=8' },
-  { id: 'c9', name: 'Chevron Diagnostics', district: 'Chattogram', address: 'Halishahar', doctors: ['d1'], image: 'https://picsum.photos/400/300?hospital=9' },
-  { id: 'c10', name: 'Imperial Hospital', district: 'Chattogram', address: 'Pahartali', doctors: ['d3'], image: 'https://picsum.photos/400/300?hospital=10' },
-  // ... and others (abbreviating for brevity but fulfilling the logic)
 ];
 
-// Expand clinics to 25+ for full mock
-for(let i=11; i<=30; i++) {
+for(let i=6; i<=30; i++) {
   const district = DISTRICTS[i % 5];
   CLINICS.push({
     id: `c${i}`,
