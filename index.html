@@ -6,11 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>JB Healthcare - আপনার ডিজিটাল স্বাস্থ্য সঙ্গী</title>
     
-    <!-- Polyfill to prevent white screen if process.env is missing -->
+    <!-- Robust process shim to prevent crashes -->
     <script>
-      if (typeof window.process === 'undefined') {
-        window.process = { env: { API_KEY: "" } };
-      }
+      window.process = window.process || { env: { API_KEY: "" } };
     </script>
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -20,37 +18,35 @@
     <style>
         :root {
             --primary: #2563eb;
-            --primary-dark: #1e40af;
         }
         body {
             font-family: 'Hind Siliguri', sans-serif;
             background-color: #f8fafc;
-            color: #1e293b;
             margin: 0;
             padding: 0;
             -webkit-tap-highlight-color: transparent;
             overflow-x: hidden;
         }
+        .nav-glow {
+            filter: drop-shadow(0 0 10px currentColor);
+        }
         .no-scrollbar::-webkit-scrollbar {
             display: none;
         }
-        .page-transition {
-            animation: fadeIn 0.4s ease-out;
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
         }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
         }
-        @media (max-width: 640px) {
-            .mobile-p-safe {
-                padding-bottom: calc(env(safe-area-inset-bottom) + 120px);
-            }
+        .mobile-p-safe {
+            padding-bottom: calc(env(safe-area-inset-bottom) + 120px);
         }
-        .nav-glow {
-            filter: drop-shadow(0 0 8px currentColor);
-        }
-        .nav-active-bg {
-            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+        /* Extra styling for floating tooltips */
+        .fab-container:hover .fab-label {
+            opacity: 1;
+            transform: translateX(-10px);
         }
     </style>
     <script type="importmap">
@@ -66,7 +62,7 @@
 }
 </script>
 </head>
-<body class="antialiased selection:bg-blue-100 selection:text-blue-700">
+<body class="antialiased">
     <div id="root"></div>
     <script type="module" src="./index.tsx"></script>
 </body>
