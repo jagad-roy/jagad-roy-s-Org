@@ -11,15 +11,25 @@ const Card: React.FC<{ children: React.ReactNode, className?: string }> = ({ chi
   </div>
 );
 
-const Button: React.FC<{ children: React.ReactNode, onClick?: () => void, variant?: 'primary' | 'secondary' | 'danger' | 'success', className?: string }> = ({ children, onClick, variant = 'primary', className = "" }) => {
+const Button: React.FC<{ 
+  children: React.ReactNode, 
+  onClick?: () => void, 
+  variant?: 'primary' | 'secondary' | 'danger' | 'success', 
+  className?: string,
+  disabled?: boolean
+}> = ({ children, onClick, variant = 'primary', className = "", disabled = false }) => {
   const styles = {
-    primary: "bg-blue-600 text-white",
+    primary: "bg-blue-600 text-white shadow-blue-100 shadow-lg",
     secondary: "bg-slate-100 text-slate-600",
     danger: "bg-red-500 text-white",
-    success: "bg-green-600 text-white"
+    success: "bg-green-600 text-white shadow-green-100 shadow-lg"
   };
   return (
-    <button onClick={onClick} className={`px-4 py-2 rounded-xl font-bold text-xs uppercase tracking-wider active:scale-95 transition-all ${styles[variant]} ${className}`}>
+    <button 
+      onClick={onClick} 
+      disabled={disabled}
+      className={`px-4 py-3 rounded-xl font-bold text-xs uppercase tracking-wider active:scale-95 transition-all disabled:opacity-50 disabled:active:scale-100 ${styles[variant]} ${className}`}
+    >
       {children}
     </button>
   );
@@ -31,6 +41,12 @@ export default function App() {
   const [geminiResult, setGeminiResult] = useState('');
   const [showPayment, setShowPayment] = useState<{show: boolean, amount: number, item: string}>({show: false, amount: 0, item: ''});
   const [paymentMethod, setPaymentMethod] = useState<'bkash' | 'nagad' | null>(null);
+  const [trxId, setTrxId] = useState('');
+
+  const PAYMENT_NUMBERS = {
+    bkash: '01518395772',
+    nagad: '01846800973'
+  };
 
   const handleAIQuery = async () => {
     if (!healthSearch) return;
@@ -43,10 +59,20 @@ export default function App() {
     }
   };
 
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    alert('নম্বরটি কপি করা হয়েছে!');
+  };
+
   const processPayment = () => {
-    alert(`${paymentMethod} এর মাধ্যমে ৳${showPayment.amount} সফলভাবে প্রদান করা হয়েছে!`);
+    if (!trxId) {
+      alert('অনুগ্রহ করে ট্রানজেকশন আইডি (TrxID) দিন।');
+      return;
+    }
+    alert(`${paymentMethod === 'bkash' ? 'বিকাশ' : 'নগদ'} এর মাধ্যমে ৳${showPayment.amount} পেমেন্ট রিকোয়েস্ট পাঠানো হয়েছে। মডারেটর শীঘ্রই আপনার সাথে যোগাযোগ করবে। ট্রানজেকশন আইডি: ${trxId}`);
     setShowPayment({show: false, amount: 0, item: ''});
     setPaymentMethod(null);
+    setTrxId('');
   };
 
   return (
@@ -138,7 +164,7 @@ export default function App() {
           </div>
         )}
 
-        {/* Placeholder for other tabs */}
+        {/* Other Tabs */}
         {(activeTab === 'clinics' || activeTab === 'videos' || activeTab === 'about' || activeTab === 'profile') && (
            <div className="flex flex-col items-center justify-center py-20 text-slate-300">
              <div className="text-5xl mb-4 opacity-20">🏥</div>
@@ -147,25 +173,20 @@ export default function App() {
         )}
       </main>
 
-      {/* Floating Moderator & Community Support */}
+      {/* Floating Buttons */}
       <div className="fixed bottom-32 right-6 z-50 flex flex-col gap-4 items-end">
-        {/* Facebook Group Button */}
         <div className="flex items-center group fab-container">
           <span className="opacity-0 group-hover:opacity-100 bg-indigo-600 text-white text-[9px] font-black px-3 py-1.5 rounded-lg mr-2 shadow-xl transition-all duration-300 fab-label">ফেসবুক গ্রুপ</span>
-          <a href="https://www.facebook.com/groups/yourgroup" target="_blank" className="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center text-white shadow-lg animate-float" style={{animationDelay: '0s'}}>
+          <a href="https://www.facebook.com/groups/yourgroup" target="_blank" className="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center text-white shadow-lg animate-float">
             <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M22.675 0h-21.35c-.732 0-1.325.593-1.325 1.325v21.351c0 .731.593 1.324 1.325 1.324h11.495v-8.74h-2.94v-3.41h2.94v-2.511c0-2.915 1.78-4.502 4.38-4.502 1.246 0 2.316.093 2.628.135v3.048h-1.804c-1.414 0-1.688.672-1.688 1.658v2.172h3.375l-.44 3.41h-2.935v8.74h6.138c.732 0 1.325-.593 1.325-1.325v-21.352c0-.732-.593-1.325-1.325-1.325z"/></svg>
           </a>
         </div>
-
-        {/* WhatsApp Button */}
         <div className="flex items-center group fab-container">
           <span className="opacity-0 group-hover:opacity-100 bg-green-500 text-white text-[9px] font-black px-3 py-1.5 rounded-lg mr-2 shadow-xl transition-all duration-300 fab-label">হোয়াটসঅ্যাপ</span>
-          <a href="https://wa.me/8801700000000" target="_blank" className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center text-white shadow-lg animate-float" style={{animationDelay: '0.8s'}}>
+          <a href="https://wa.me/8801518395772" target="_blank" className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center text-white shadow-lg animate-float" style={{animationDelay: '0.8s'}}>
             <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.72.937 3.659 1.434 5.705 1.435h.008c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
           </a>
         </div>
-
-        {/* Messenger Button */}
         <div className="flex items-center group fab-container">
           <span className="opacity-0 group-hover:opacity-100 bg-blue-500 text-white text-[9px] font-black px-3 py-1.5 rounded-lg mr-2 shadow-xl transition-all duration-300 fab-label">মেসেঞ্জার</span>
           <a href="https://m.me/yourpage" target="_blank" className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white shadow-lg animate-float" style={{animationDelay: '1.5s'}}>
@@ -174,7 +195,7 @@ export default function App() {
         </div>
       </div>
 
-      {/* Navigation Footer - Color & Lighting */}
+      {/* Navigation Footer */}
       <nav className="fixed bottom-6 left-6 right-6 z-50 bg-slate-900/90 backdrop-blur-xl flex justify-around items-center py-4 px-2 rounded-[30px] shadow-2xl border border-white/10">
         {[
           { id: 'home', label: 'হোম', icon: '🏠', color: 'text-cyan-400' },
@@ -197,44 +218,94 @@ export default function App() {
 
       {/* Payment Modal */}
       {showPayment.show && (
-        <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-end justify-center animate-in fade-in duration-300">
-           <div className="bg-white w-full max-w-lg rounded-t-[40px] p-8 pb-12 space-y-6 animate-in slide-in-from-bottom-10">
+        <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-end justify-center animate-in fade-in duration-300">
+           <div className="bg-white w-full max-w-lg rounded-t-[40px] p-8 pb-12 space-y-6 animate-in slide-in-from-bottom-10 max-h-[90vh] overflow-y-auto">
               <div className="flex justify-between items-center">
-                 <h2 className="text-xl font-black text-slate-800">পেমেন্ট নিশ্চিত করুন</h2>
-                 <button onClick={() => setShowPayment({show: false, amount: 0, item: ''})} className="text-slate-400 hover:text-red-500 transition-colors">✕</button>
+                 <h2 className="text-xl font-black text-slate-800 tracking-tight">পেমেন্ট নিশ্চিত করুন</h2>
+                 <button onClick={() => {setShowPayment({show: false, amount: 0, item: ''}); setPaymentMethod(null); setTrxId('');}} className="text-slate-400 hover:text-red-500 transition-colors">✕</button>
               </div>
-              <div className="bg-slate-50 p-5 rounded-3xl border border-slate-100">
-                 <p className="text-[10px] uppercase font-black text-slate-400 tracking-widest">সার্ভিস বিস্তারিত</p>
-                 <p className="text-sm text-slate-800 font-bold mt-1">{showPayment.item}</p>
-                 <div className="mt-3 flex items-baseline gap-1">
-                   <span className="text-2xl font-black text-blue-600">৳{showPayment.amount}</span>
-                   <span className="text-[10px] font-bold text-slate-400 uppercase">মাত্র</span>
+              
+              <div className="bg-slate-50 p-5 rounded-3xl border border-slate-100 flex justify-between items-center">
+                 <div>
+                    <p className="text-[9px] uppercase font-black text-slate-400 tracking-widest">সার্ভিস</p>
+                    <p className="text-sm text-slate-800 font-bold">{showPayment.item}</p>
+                 </div>
+                 <div className="text-right">
+                    <p className="text-[9px] uppercase font-black text-slate-400 tracking-widest">মোট বিল</p>
+                    <p className="text-2xl font-black text-blue-600">৳{showPayment.amount}</p>
                  </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                 <button 
-                  onClick={() => setPaymentMethod('bkash')}
-                  className={`p-4 rounded-2xl border-2 flex flex-col items-center gap-2 transition-all ${paymentMethod === 'bkash' ? 'border-pink-500 bg-pink-50 shadow-inner' : 'border-slate-100 hover:border-slate-200'}`}
-                 >
-                    <img src="https://www.logo.wine/a/logo/BKash/BKash-Logo.wine.svg" className="w-12 h-12 object-contain" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-pink-600">বিকাশ</span>
-                 </button>
-                 <button 
-                  onClick={() => setPaymentMethod('nagad')}
-                  className={`p-4 rounded-2xl border-2 flex flex-col items-center gap-2 transition-all ${paymentMethod === 'nagad' ? 'border-orange-500 bg-orange-50 shadow-inner' : 'border-slate-100 hover:border-slate-200'}`}
-                 >
-                    <img src="https://download.logo.wine/logo/Nagad/Nagad-Logo.wine.png" className="w-12 h-12 object-contain" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-orange-600">নগদ</span>
-                 </button>
-              </div>
-              <Button 
-                variant="success" 
-                className="w-full py-4 text-sm shadow-xl shadow-green-100" 
-                disabled={!paymentMethod}
-                onClick={processPayment}
-              >
-                পেমেন্ট সম্পন্ন করুন
-              </Button>
+
+              {!paymentMethod ? (
+                <div className="space-y-4">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">পেমেন্ট মেথড বেছে নিন</p>
+                  <div className="grid grid-cols-2 gap-4">
+                     <button 
+                      onClick={() => setPaymentMethod('bkash')}
+                      className="p-4 rounded-2xl border-2 border-slate-100 flex flex-col items-center gap-2 hover:border-pink-500 hover:bg-pink-50 transition-all"
+                     >
+                        <img src="https://www.logo.wine/a/logo/BKash/BKash-Logo.wine.svg" className="w-12 h-12 object-contain" />
+                        <span className="text-[10px] font-black uppercase tracking-widest text-pink-600">বিকাশ</span>
+                     </button>
+                     <button 
+                      onClick={() => setPaymentMethod('nagad')}
+                      className="p-4 rounded-2xl border-2 border-slate-100 flex flex-col items-center gap-2 hover:border-orange-500 hover:bg-orange-50 transition-all"
+                     >
+                        <img src="https://download.logo.wine/logo/Nagad/Nagad-Logo.wine.png" className="w-12 h-12 object-contain" />
+                        <span className="text-[10px] font-black uppercase tracking-widest text-orange-600">নগদ</span>
+                     </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-5 animate-in zoom-in-95 duration-200">
+                  <div className={`p-6 rounded-[32px] border-2 ${paymentMethod === 'bkash' ? 'border-pink-100 bg-pink-50' : 'border-orange-100 bg-orange-50'}`}>
+                    <div className="flex items-center gap-3 mb-4">
+                      <img 
+                        src={paymentMethod === 'bkash' ? "https://www.logo.wine/a/logo/BKash/BKash-Logo.wine.svg" : "https://download.logo.wine/logo/Nagad/Nagad-Logo.wine.png"} 
+                        className="w-10 h-10 object-contain" 
+                      />
+                      <p className={`font-black text-sm uppercase tracking-wide ${paymentMethod === 'bkash' ? 'text-pink-600' : 'text-orange-600'}`}>
+                        {paymentMethod === 'bkash' ? 'বিকাশ' : 'নগদ'} সেন্ড মানি
+                      </p>
+                    </div>
+                    
+                    <div className="bg-white/80 backdrop-blur p-4 rounded-2xl border border-white flex justify-between items-center shadow-sm">
+                      <div className="space-y-0.5">
+                        <p className="text-[9px] font-black text-slate-400 uppercase">পার্সোনাল নম্বর</p>
+                        <p className="text-lg font-black text-slate-800 tracking-wider">
+                          {PAYMENT_NUMBERS[paymentMethod]}
+                        </p>
+                      </div>
+                      <button 
+                        onClick={() => copyToClipboard(PAYMENT_NUMBERS[paymentMethod])}
+                        className={`p-3 rounded-xl ${paymentMethod === 'bkash' ? 'bg-pink-100 text-pink-600' : 'bg-orange-100 text-orange-600'} active:scale-90 transition-transform`}
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                      </button>
+                    </div>
+                    
+                    <p className="mt-4 text-[10px] text-slate-500 font-medium text-center italic">
+                      উপরে দেওয়া নম্বরে ৳{showPayment.amount} <span className="font-black text-slate-800">সেন্ড মানি (Send Money)</span> করুন।
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">ট্রানজেকশন আইডি (TrxID)</label>
+                    <input 
+                      type="text" 
+                      placeholder="ABC123XYZ" 
+                      className="w-full px-5 py-4 bg-slate-50 border-2 border-transparent focus:border-blue-500 outline-none rounded-2xl font-bold text-slate-700 transition-all uppercase"
+                      value={trxId}
+                      onChange={(e) => setTrxId(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="flex gap-3">
+                    <Button variant="secondary" className="flex-1" onClick={() => setPaymentMethod(null)}>পিছনে যান</Button>
+                    <Button variant="success" className="flex-[2]" onClick={processPayment} disabled={!trxId}>নিশ্চিত করুন</Button>
+                  </div>
+                </div>
+              )}
            </div>
         </div>
       )}
