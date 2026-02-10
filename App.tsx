@@ -39,7 +39,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('home');
   const [healthSearch, setHealthSearch] = useState('');
   const [geminiResult, setGeminiResult] = useState('');
-  const [showPayment, setShowPayment] = useState<{show: boolean, amount: number, item: string}>({show: false, amount: 0, item: ''});
+  const [showPayment, setShowPayment] = useState<{show: boolean, amount: number, item: string, shipping: number}>({show: false, amount: 0, item: '', shipping: 0});
   const [paymentMethod, setPaymentMethod] = useState<'bkash' | 'nagad' | null>(null);
   const [trxId, setTrxId] = useState('');
 
@@ -69,10 +69,20 @@ export default function App() {
       alert('অনুগ্রহ করে ট্রানজেকশন আইডি (TrxID) দিন।');
       return;
     }
-    alert(`${paymentMethod === 'bkash' ? 'বিকাশ' : 'নগদ'} এর মাধ্যমে ৳${showPayment.amount} পেমেন্ট রিকোয়েস্ট পাঠানো হয়েছে। মডারেটর শীঘ্রই আপনার সাথে যোগাযোগ করবে। ট্রানজেকশন আইডি: ${trxId}`);
-    setShowPayment({show: false, amount: 0, item: ''});
+    const total = showPayment.amount + showPayment.shipping;
+    alert(`${paymentMethod === 'bkash' ? 'বিকাশ' : 'নগদ'} এর মাধ্যমে ৳${total} পেমেন্ট রিকোয়েস্ট পাঠানো হয়েছে। মডারেটর শীঘ্রই আপনার সাথে যোগাযোগ করবে। ট্রানজেকশন আইডি: ${trxId}`);
+    setShowPayment({show: false, amount: 0, item: '', shipping: 0});
     setPaymentMethod(null);
     setTrxId('');
+  };
+
+  const openPayment = (item: string, price: number, isShippable: boolean) => {
+    setShowPayment({
+      show: true,
+      amount: price,
+      item: item,
+      shipping: isShippable ? 100 : 0
+    });
   };
 
   return (
@@ -82,7 +92,7 @@ export default function App() {
       <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md px-6 py-4 border-b flex justify-between items-center">
         <h1 className="text-xl font-black text-slate-800">JB Healthcare</h1>
         <div className="flex gap-2">
-           <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-xs font-bold">JR</div>
+           <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-xs font-bold shadow-inner">JR</div>
         </div>
       </header>
 
@@ -109,7 +119,7 @@ export default function App() {
                 </button>
               </div>
               {geminiResult && (
-                <div className="mt-4 p-4 bg-black/10 rounded-2xl text-[10px] font-medium leading-relaxed border border-white/5 max-h-40 overflow-y-auto no-scrollbar">
+                <div className="mt-4 p-4 bg-black/10 rounded-2xl text-[10px] font-medium leading-relaxed border border-white/5 max-h-40 overflow-y-auto no-scrollbar whitespace-pre-wrap">
                   {geminiResult}
                 </div>
               )}
@@ -120,7 +130,7 @@ export default function App() {
               <h2 className="text-lg font-black text-slate-800 mb-4">ইমারজেন্সি সার্ভিস (বাসায়)</h2>
               <div className="grid grid-cols-2 gap-4">
                 {EMERGENCY_SERVICES.map(s => (
-                  <Card key={s.id} className="text-center hover:border-blue-400 cursor-pointer transition-colors" onClick={() => setShowPayment({show: true, amount: s.price, item: s.name})}>
+                  <Card key={s.id} className="text-center hover:border-blue-400 cursor-pointer transition-colors" onClick={() => openPayment(s.name, s.price, true)}>
                     <div className="text-3xl mb-2">{s.icon}</div>
                     <h4 className="text-xs font-black">{s.name}</h4>
                     <p className="text-[9px] text-slate-400 mt-1">{s.description}</p>
@@ -140,7 +150,7 @@ export default function App() {
                     <div className="flex-1">
                       <h4 className="font-bold text-sm">{d.name}</h4>
                       <p className="text-[10px] text-slate-400 font-medium">{d.specialty} • {d.degree}</p>
-                      <Button onClick={() => setShowPayment({show: true, amount: 500, item: `সিরিয়াল: ${d.name}`})} className="mt-2 py-1.5 px-3">সিরিয়াল নিন</Button>
+                      <Button onClick={() => openPayment(`সিরিয়াল: ${d.name}`, 500, false)} className="mt-2 py-1.5 px-3">সিরিয়াল নিন</Button>
                     </div>
                   </Card>
                 ))}
@@ -150,17 +160,23 @@ export default function App() {
         )}
 
         {activeTab === 'pharmacy' && (
-          <div className="grid grid-cols-2 gap-4 animate-in slide-in-from-bottom-5">
-            {MEDICINES.map(m => (
-              <Card key={m.id} className="text-center group">
-                <div className="relative overflow-hidden rounded-xl mb-2">
-                  <img src={m.image} className="w-full h-32 object-contain group-hover:scale-110 transition-transform" />
-                </div>
-                <h4 className="text-xs font-bold text-slate-700">{m.name}</h4>
-                <p className="text-blue-600 font-black mt-1">৳{m.price}</p>
-                <Button onClick={() => setShowPayment({show: true, amount: m.price, item: m.name})} className="mt-3 w-full">কিনুন</Button>
-              </Card>
-            ))}
+          <div className="space-y-6 animate-in slide-in-from-bottom-5">
+             <div className="bg-orange-500 p-6 rounded-[30px] text-white shadow-lg">
+                <h3 className="text-sm font-bold uppercase tracking-widest mb-2">মেডিসিন শপ</h3>
+                <p className="text-xs opacity-90">বাসায় ডেলিভারি চার্জ মাত্র ১০০ টাকা</p>
+             </div>
+             <div className="grid grid-cols-2 gap-4">
+              {MEDICINES.map(m => (
+                <Card key={m.id} className="text-center group flex flex-col">
+                  <div className="relative overflow-hidden rounded-xl mb-2 flex-1 flex items-center justify-center">
+                    <img src={m.image} className="w-full h-32 object-contain group-hover:scale-110 transition-transform" />
+                  </div>
+                  <h4 className="text-xs font-bold text-slate-700">{m.name}</h4>
+                  <p className="text-blue-600 font-black mt-1">৳{m.price}</p>
+                  <Button onClick={() => openPayment(m.name, m.price, true)} className="mt-3 w-full">কিনুন</Button>
+                </Card>
+              ))}
+            </div>
           </div>
         )}
 
@@ -168,7 +184,7 @@ export default function App() {
         {(activeTab === 'clinics' || activeTab === 'videos' || activeTab === 'about' || activeTab === 'profile') && (
            <div className="flex flex-col items-center justify-center py-20 text-slate-300">
              <div className="text-5xl mb-4 opacity-20">🏥</div>
-             <p className="text-xs font-black uppercase tracking-widest">এই বিভাগটি শীঘ্রই আসছে</p>
+             <p className="text-xs font-black uppercase tracking-widest">এই বিভাগটি শীঘ্রই আপডেট করা হবে</p>
            </div>
         )}
       </main>
@@ -187,30 +203,30 @@ export default function App() {
             <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.72.937 3.659 1.434 5.705 1.435h.008c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
           </a>
         </div>
-        <div className="flex items-center group fab-container">
-          <span className="opacity-0 group-hover:opacity-100 bg-blue-500 text-white text-[9px] font-black px-3 py-1.5 rounded-lg mr-2 shadow-xl transition-all duration-300 fab-label">মেসেঞ্জার</span>
-          <a href="https://m.me/yourpage" target="_blank" className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white shadow-lg animate-float" style={{animationDelay: '1.5s'}}>
-            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 4.974 0 11.111c0 3.498 1.744 6.614 4.469 8.654V24l4.088-2.242c1.012.28 2.089.431 3.203.431 6.627 0 12-4.975 12-11.111C24 4.974 18.627 0 12 0zm1.291 14.194l-3.147-3.354-6.142 3.354 6.756-7.18 3.262 3.354 6.027-3.354-6.756 7.18z"/></svg>
-          </a>
-        </div>
       </div>
 
-      {/* Navigation Footer */}
-      <nav className="fixed bottom-6 left-6 right-6 z-50 bg-slate-900/90 backdrop-blur-xl flex justify-around items-center py-4 px-2 rounded-[30px] shadow-2xl border border-white/10">
+      {/* Navigation Footer with Lighting and Coloring */}
+      <nav className="fixed bottom-6 left-6 right-6 z-50 bg-slate-900/95 backdrop-blur-2xl flex justify-around items-center py-5 px-3 rounded-[36px] shadow-2xl border border-white/10 ring-1 ring-white/5">
         {[
-          { id: 'home', label: 'হোম', icon: '🏠', color: 'text-cyan-400' },
-          { id: 'clinics', label: 'ক্লিনিক', icon: '🏥', color: 'text-emerald-400' },
-          { id: 'pharmacy', label: 'শপ', icon: '🛒', color: 'text-orange-400' },
-          { id: 'videos', label: 'ভিডিও', icon: '🎥', color: 'text-rose-400' },
-          { id: 'about', label: 'তথ্য', icon: 'ℹ️', color: 'text-indigo-400' },
-          { id: 'profile', label: 'প্রোফাইল', icon: '👤', color: 'text-fuchsia-400' },
+          { id: 'home', label: 'হোম', icon: '🏠', color: 'text-cyan-400', glow: 'glow-cyan' },
+          { id: 'clinics', label: 'ক্লিনিক', icon: '🏥', color: 'text-emerald-400', glow: 'glow-emerald' },
+          { id: 'pharmacy', label: 'শপ', icon: '🛒', color: 'text-orange-400', glow: 'glow-orange' },
+          { id: 'videos', label: 'ভিডিও', icon: '🎥', color: 'text-rose-400', glow: 'glow-rose' },
+          { id: 'about', label: 'তথ্য', icon: 'ℹ️', color: 'text-indigo-400', glow: 'glow-indigo' },
+          { id: 'profile', label: 'প্রোফাইল', icon: '👤', color: 'text-fuchsia-400', glow: 'glow-fuchsia' },
         ].map(tab => {
           const isActive = activeTab === tab.id;
           return (
-            <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex flex-col items-center gap-1 transition-all duration-300 ${isActive ? `${tab.color} scale-110 nav-glow` : 'text-slate-500 opacity-60'}`}>
-              <span className="text-xl">{tab.icon}</span>
-              <span className="text-[7px] font-black uppercase tracking-widest">{tab.label}</span>
-              {isActive && <div className={`w-1 h-1 rounded-full mt-0.5 ${tab.color.replace('text', 'bg')}`}></div>}
+            <button 
+              key={tab.id} 
+              onClick={() => setActiveTab(tab.id)} 
+              className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${isActive ? `${tab.color} scale-125 ${tab.glow}` : 'text-slate-500 opacity-60 hover:opacity-100'}`}
+            >
+              <span className="text-xl filter drop-shadow-sm">{tab.icon}</span>
+              <span className={`text-[7px] font-black uppercase tracking-widest ${isActive ? 'opacity-100' : 'opacity-80'}`}>{tab.label}</span>
+              {isActive && (
+                <div className={`w-1.5 h-1.5 rounded-full mt-0.5 ${tab.color.replace('text', 'bg')} shadow-lg animate-pulse`}></div>
+              )}
             </button>
           )
         })}
@@ -218,21 +234,32 @@ export default function App() {
 
       {/* Payment Modal */}
       {showPayment.show && (
-        <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-end justify-center animate-in fade-in duration-300">
-           <div className="bg-white w-full max-w-lg rounded-t-[40px] p-8 pb-12 space-y-6 animate-in slide-in-from-bottom-10 max-h-[90vh] overflow-y-auto">
-              <div className="flex justify-between items-center">
+        <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-end justify-center animate-in fade-in duration-300 p-4">
+           <div className="bg-white w-full max-w-lg rounded-t-[40px] p-8 pb-12 space-y-6 animate-in slide-in-from-bottom-10 max-h-[90vh] overflow-y-auto shadow-2xl">
+              <div className="flex justify-between items-center border-b pb-4">
                  <h2 className="text-xl font-black text-slate-800 tracking-tight">পেমেন্ট নিশ্চিত করুন</h2>
-                 <button onClick={() => {setShowPayment({show: false, amount: 0, item: ''}); setPaymentMethod(null); setTrxId('');}} className="text-slate-400 hover:text-red-500 transition-colors">✕</button>
+                 <button onClick={() => {setShowPayment({show: false, amount: 0, item: '', shipping: 0}); setPaymentMethod(null); setTrxId('');}} className="text-slate-400 hover:text-red-500 transition-colors bg-slate-100 p-2 rounded-full">✕</button>
               </div>
               
-              <div className="bg-slate-50 p-5 rounded-3xl border border-slate-100 flex justify-between items-center">
-                 <div>
-                    <p className="text-[9px] uppercase font-black text-slate-400 tracking-widest">সার্ভিস</p>
+              <div className="bg-slate-50 p-6 rounded-[32px] border border-slate-100 space-y-3">
+                 <div className="flex justify-between items-center">
+                    <p className="text-[10px] uppercase font-black text-slate-400 tracking-widest">সার্ভিস</p>
                     <p className="text-sm text-slate-800 font-bold">{showPayment.item}</p>
                  </div>
-                 <div className="text-right">
-                    <p className="text-[9px] uppercase font-black text-slate-400 tracking-widest">মোট বিল</p>
-                    <p className="text-2xl font-black text-blue-600">৳{showPayment.amount}</p>
+                 <div className="flex justify-between items-center">
+                    <p className="text-[10px] uppercase font-black text-slate-400 tracking-widest">মূল্য</p>
+                    <p className="text-sm text-slate-800 font-bold">৳{showPayment.amount}</p>
+                 </div>
+                 {showPayment.shipping > 0 && (
+                   <div className="flex justify-between items-center text-blue-600 font-bold">
+                      <p className="text-[10px] uppercase font-black tracking-widest">ডেলিভারি চার্জ</p>
+                      <p className="text-sm">৳{showPayment.shipping}</p>
+                   </div>
+                 )}
+                 <div className="h-px bg-slate-200 my-2"></div>
+                 <div className="flex justify-between items-center">
+                    <p className="text-[10px] uppercase font-black text-slate-400 tracking-widest">সর্বমোট</p>
+                    <p className="text-2xl font-black text-blue-600">৳{showPayment.amount + showPayment.shipping}</p>
                  </div>
               </div>
 
@@ -242,34 +269,40 @@ export default function App() {
                   <div className="grid grid-cols-2 gap-4">
                      <button 
                       onClick={() => setPaymentMethod('bkash')}
-                      className="p-4 rounded-2xl border-2 border-slate-100 flex flex-col items-center gap-2 hover:border-pink-500 hover:bg-pink-50 transition-all"
+                      className="p-5 rounded-3xl border-2 border-slate-100 flex flex-col items-center gap-3 hover:border-pink-500 hover:bg-pink-50 transition-all shadow-sm active:scale-95"
                      >
-                        <img src="https://www.logo.wine/a/logo/BKash/BKash-Logo.wine.svg" className="w-12 h-12 object-contain" />
+                        <div className="w-16 h-16 bg-pink-100 rounded-2xl flex items-center justify-center p-2">
+                           <img src="https://www.logo.wine/a/logo/BKash/BKash-Logo.wine.svg" className="w-full h-full object-contain" alt="bKash" />
+                        </div>
                         <span className="text-[10px] font-black uppercase tracking-widest text-pink-600">বিকাশ</span>
                      </button>
                      <button 
                       onClick={() => setPaymentMethod('nagad')}
-                      className="p-4 rounded-2xl border-2 border-slate-100 flex flex-col items-center gap-2 hover:border-orange-500 hover:bg-orange-50 transition-all"
+                      className="p-5 rounded-3xl border-2 border-slate-100 flex flex-col items-center gap-3 hover:border-orange-500 hover:bg-orange-50 transition-all shadow-sm active:scale-95"
                      >
-                        <img src="https://download.logo.wine/logo/Nagad/Nagad-Logo.wine.png" className="w-12 h-12 object-contain" />
+                        <div className="w-16 h-16 bg-orange-100 rounded-2xl flex items-center justify-center p-2">
+                           <img src="https://download.logo.wine/logo/Nagad/Nagad-Logo.wine.png" className="w-full h-full object-contain" alt="Nagad" />
+                        </div>
                         <span className="text-[10px] font-black uppercase tracking-widest text-orange-600">নগদ</span>
                      </button>
                   </div>
                 </div>
               ) : (
                 <div className="space-y-5 animate-in zoom-in-95 duration-200">
-                  <div className={`p-6 rounded-[32px] border-2 ${paymentMethod === 'bkash' ? 'border-pink-100 bg-pink-50' : 'border-orange-100 bg-orange-50'}`}>
+                  <div className={`p-6 rounded-[32px] border-2 shadow-inner ${paymentMethod === 'bkash' ? 'border-pink-100 bg-pink-50' : 'border-orange-100 bg-orange-50'}`}>
                     <div className="flex items-center gap-3 mb-4">
-                      <img 
-                        src={paymentMethod === 'bkash' ? "https://www.logo.wine/a/logo/BKash/BKash-Logo.wine.svg" : "https://download.logo.wine/logo/Nagad/Nagad-Logo.wine.png"} 
-                        className="w-10 h-10 object-contain" 
-                      />
+                      <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center p-1 shadow-sm">
+                        <img 
+                          src={paymentMethod === 'bkash' ? "https://www.logo.wine/a/logo/BKash/BKash-Logo.wine.svg" : "https://download.logo.wine/logo/Nagad/Nagad-Logo.wine.png"} 
+                          className="w-full h-full object-contain" 
+                        />
+                      </div>
                       <p className={`font-black text-sm uppercase tracking-wide ${paymentMethod === 'bkash' ? 'text-pink-600' : 'text-orange-600'}`}>
-                        {paymentMethod === 'bkash' ? 'বিকাশ' : 'নগদ'} সেন্ড মানি
+                        {paymentMethod === 'bkash' ? 'বিকাশ' : 'নগদ'} সেন্ড মানি করুন
                       </p>
                     </div>
                     
-                    <div className="bg-white/80 backdrop-blur p-4 rounded-2xl border border-white flex justify-between items-center shadow-sm">
+                    <div className="bg-white/90 backdrop-blur p-4 rounded-2xl border border-white flex justify-between items-center shadow-sm">
                       <div className="space-y-0.5">
                         <p className="text-[9px] font-black text-slate-400 uppercase">পার্সোনাল নম্বর</p>
                         <p className="text-lg font-black text-slate-800 tracking-wider">
@@ -278,14 +311,14 @@ export default function App() {
                       </div>
                       <button 
                         onClick={() => copyToClipboard(PAYMENT_NUMBERS[paymentMethod])}
-                        className={`p-3 rounded-xl ${paymentMethod === 'bkash' ? 'bg-pink-100 text-pink-600' : 'bg-orange-100 text-orange-600'} active:scale-90 transition-transform`}
+                        className={`p-3 rounded-xl ${paymentMethod === 'bkash' ? 'bg-pink-100 text-pink-600' : 'bg-orange-100 text-orange-600'} active:scale-90 transition-transform shadow-md`}
                       >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                       </button>
                     </div>
                     
-                    <p className="mt-4 text-[10px] text-slate-500 font-medium text-center italic">
-                      উপরে দেওয়া নম্বরে ৳{showPayment.amount} <span className="font-black text-slate-800">সেন্ড মানি (Send Money)</span> করুন।
+                    <p className="mt-4 text-[10px] text-slate-500 font-medium text-center italic leading-relaxed">
+                      উপরের নম্বরে মোট ৳{showPayment.amount + showPayment.shipping} <span className="font-black text-slate-800">সেন্ড মানি (Send Money)</span> করার পর নিচের বক্সে ট্রানজেকশন আইডি দিন।
                     </p>
                   </div>
 
@@ -293,8 +326,8 @@ export default function App() {
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">ট্রানজেকশন আইডি (TrxID)</label>
                     <input 
                       type="text" 
-                      placeholder="ABC123XYZ" 
-                      className="w-full px-5 py-4 bg-slate-50 border-2 border-transparent focus:border-blue-500 outline-none rounded-2xl font-bold text-slate-700 transition-all uppercase"
+                      placeholder="যেমন: ABC123XYZ" 
+                      className="w-full px-5 py-4 bg-slate-50 border-2 border-transparent focus:border-blue-500 outline-none rounded-2xl font-bold text-slate-700 transition-all uppercase placeholder:text-slate-300"
                       value={trxId}
                       onChange={(e) => setTrxId(e.target.value)}
                     />
@@ -302,7 +335,7 @@ export default function App() {
 
                   <div className="flex gap-3">
                     <Button variant="secondary" className="flex-1" onClick={() => setPaymentMethod(null)}>পিছনে যান</Button>
-                    <Button variant="success" className="flex-[2]" onClick={processPayment} disabled={!trxId}>নিশ্চিত করুন</Button>
+                    <Button variant="success" className="flex-[2]" onClick={processPayment} disabled={!trxId}>পেমেন্ট নিশ্চিত করুন</Button>
                   </div>
                 </div>
               )}
