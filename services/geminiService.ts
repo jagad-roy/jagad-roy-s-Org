@@ -1,12 +1,12 @@
-
 import { GoogleGenAI } from "@google/genai";
 
 export class GeminiService {
   async consultHealth(query: string) {
-    // Correctly initialize with environment variable at the time of calling
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+    // Correctly initialize with environment variable
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
     try {
+      // Use ai.models.generateContent to query GenAI with model and prompt
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
         contents: `As a professional medical AI assistant for JB Healthcare, answer this query in simple and helpful Bengali: "${query}". 
@@ -16,6 +16,7 @@ export class GeminiService {
         3. Professional Disclaimer (সতর্কবার্তা: এটি ডাক্তারের বিকল্প নয়).
         Use clean formatting with bullet points.`,
       });
+      // Extracting text from the property .text (not a method)
       return response.text;
     } catch (error) {
       console.error("Gemini Error:", error);

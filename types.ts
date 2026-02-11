@@ -36,6 +36,21 @@ export interface Medicine {
   description: string;
 }
 
+export interface Order {
+  id?: string;
+  created_at?: string;
+  user_id: string;
+  user_email: string;
+  item_name: string;
+  amount: number;
+  shipping: number;
+  payment_method: string;
+  sender_name: string;
+  sender_contact: string;
+  trx_id: string;
+  status: 'pending' | 'completed' | 'cancelled';
+}
+
 export interface LabTest {
   id: string;
   name: string;
