@@ -48,22 +48,25 @@ export interface Order {
   sender_name: string;
   sender_contact: string;
   trx_id: string;
-  status: 'pending' | 'completed' | 'cancelled';
+  status: 'pending' | 'verified' | 'processing' | 'completed' | 'cancelled';
 }
 
-export interface LabTest {
+export interface Profile {
   id: string;
-  name: string;
-  price: number;
-  description: string;
+  full_name: string;
+  phone?: string;
+  role: UserRole;
 }
 
 export interface Prescription {
   id: string;
-  patientId: string;
-  doctorId: string;
-  date: string;
-  medicines: string[];
-  tests: string[];
+  created_at: string;
+  patient_id: string;
+  patient_name: string;
+  doctor_id: string;
+  doctor_name: string;
+  doctor_specialty: string;
+  medicines: string; // JSON string or comma-separated list
   notes: string;
+  next_visit_date?: string;
 }
