@@ -27,29 +27,22 @@
             -webkit-tap-highlight-color: transparent;
             overflow-x: hidden;
         }
-        .nav-glow {
-            filter: drop-shadow(0 0 8px currentColor);
-        }
         .no-scrollbar::-webkit-scrollbar {
             display: none;
-        }
-        .animate-float {
-            animation: float 3s ease-in-out infinite;
-        }
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
         }
         .mobile-p-safe {
             padding-bottom: calc(env(safe-area-inset-bottom) + 120px);
         }
-        /* Neon Glow Effects for Nav Icons */
-        .glow-cyan { filter: drop-shadow(0 0 10px rgba(34, 211, 238, 1)); }
-        .glow-emerald { filter: drop-shadow(0 0 10px rgba(52, 211, 153, 1)); }
-        .glow-orange { filter: drop-shadow(0 0 10px rgba(251, 146, 60, 1)); }
-        .glow-rose { filter: drop-shadow(0 0 10px rgba(251, 113, 133, 1)); }
-        .glow-indigo { filter: drop-shadow(0 0 10px rgba(129, 140, 248, 1)); }
-        .glow-fuchsia { filter: drop-shadow(0 0 10px rgba(232, 121, 249, 1)); }
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-100%); }
+        }
+        .animate-marquee {
+            animation: marquee 20s linear infinite;
+        }
+        .animate-marquee:hover {
+            animation-play-state: paused;
+        }
     </style>
     <script type="importmap">
 {

@@ -5,6 +5,19 @@ export enum UserRole {
   ADMIN = 'ADMIN'
 }
 
+export interface Profile {
+  id: string;
+  full_name: string;
+  phone?: string;
+  role: UserRole;
+  status: 'active' | 'pending' | 'suspended';
+}
+
+export interface AppSetting {
+  key: string;
+  value: string;
+}
+
 export interface Doctor {
   id: string;
   name: string;
@@ -51,13 +64,6 @@ export interface Order {
   status: 'pending' | 'verified' | 'processing' | 'completed' | 'cancelled';
 }
 
-export interface Profile {
-  id: string;
-  full_name: string;
-  phone?: string;
-  role: UserRole;
-}
-
 export interface Prescription {
   id: string;
   created_at: string;
@@ -66,7 +72,7 @@ export interface Prescription {
   doctor_id: string;
   doctor_name: string;
   doctor_specialty: string;
-  medicines: string; // JSON string or comma-separated list
+  medicines: string;
   notes: string;
   next_visit_date?: string;
 }
