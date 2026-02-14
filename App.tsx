@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { UserRole, Doctor, Clinic, Medicine, Order, Profile, Prescription } from './types';
-import { DOCTORS, CLINICS, MEDICINES, EMERGENCY_SERVICES, DISTRICTS } from './constants';
+import { DOCTORS, CLINICS, MEDICINES, EMERGENCY_SERVICES, DISTRICTS, APP_VIDEOS, ABOUT_US_DATA } from './constants';
 import { gemini } from './services/geminiService';
 import { supabase } from './services/supabaseClient';
 
@@ -65,15 +65,17 @@ const Input: React.FC<{
   value: string,
   onChange: (val: string) => void,
   required?: boolean,
-  className?: string
-}> = ({ label, type = "text", placeholder, value, onChange, required = false, className = "" }) => (
+  className?: string,
+  name?: string
+}> = ({ label, type = "text", placeholder, value, onChange, required = false, className = "", name }) => (
   <div className={`space-y-1.5 w-full ${className}`}>
     <label className="text-[10px] font-black text-slate-400 uppercase ml-2 tracking-widest">{label}</label>
     <input 
+      name={name}
       type={type}
       placeholder={placeholder}
       value={value}
-      onChange={(e) => onChange(e.target.value)}
+      onChange={(e) => onChange ? onChange(e.target.value) : null}
       required={required}
       className="w-full bg-slate-50 border-2 border-transparent focus:border-blue-500 rounded-2xl px-5 py-3 text-sm font-bold text-slate-700 outline-none transition-all placeholder:text-slate-300"
     />
@@ -84,13 +86,14 @@ const Input: React.FC<{
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('home');
+  const [homeSubCategory, setHomeSubCategory] = useState<'doctors' | 'hospitals' | 'medicine' | 'emergency'>('doctors');
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [tickerMessage, setTickerMessage] = useState('জেবি হেলথকেয়ারে আপনাকে স্বাগতম! যে কোনো প্রয়োজনে যোগাযোগ করুন।');
+  const [tickerMessage, setTickerMessage] = useState('জেবি হেলথকেয়ারে আপনাকে স্বাগতম! মডারেটর প্যানেল এখন আরও উন্নত।');
 
   // Search States
-  const [doctorSearchTerm, setDoctorSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
   const [adminSearchTerm, setAdminSearchTerm] = useState('');
 
   // Modals & State
@@ -99,13 +102,14 @@ export default function App() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'register' | 'moderator'>('login');
+  const [selectedRole, setSelectedRole] = useState<UserRole>(UserRole.PATIENT);
   
-  // Admin Specific
+  // Admin Data
   const [allProfiles, setAllProfiles] = useState<Profile[]>([]);
   const [allPrescriptions, setAllPrescriptions] = useState<Prescription[]>([]);
-  const [orders, setOrders] = useState<Order[]>([]);
+  const [allOrders, setAllOrders] = useState<Order[]>([]);
   const [historyTab, setHistoryTab] = useState<'info' | 'history' | 'admin'>('info');
-  const [adminSubTab, setAdminSubTab] = useState<'users' | 'consultations' | 'settings'>('consultations');
+  const [adminSubTab, setAdminSubTab] = useState<'consultations' | 'users' | 'orders' | 'settings'>('consultations');
 
   const PAYMENT_NUMBERS = { bkash: '01518395772', nagad: '01846800973' };
 
@@ -147,40 +151,61 @@ export default function App() {
     ]);
     if (profRes.data) setAllProfiles(profRes.data);
     if (presRes.data) setAllPrescriptions(presRes.data);
-    if (ordRes.data) setOrders(ordRes.data);
+    if (ordRes.data) setAllOrders(ordRes.data);
   };
 
   const fetchUserData = async () => {
     const { data: pres } = await supabase.from('prescriptions').select('*').eq(profile?.role === UserRole.DOCTOR ? 'doctor_id' : 'patient_id', user.id).order('created_at', { ascending: false });
     const { data: ord } = await supabase.from('orders').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
     if (pres) setAllPrescriptions(pres);
-    if (ord) setOrders(ord);
+    if (ord) setAllOrders(ord || []);
   };
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsProcessing(true);
-    const emailInput = (e.target as any).email.value;
-    const passwordInput = (e.target as any).password.value;
+    const formData = new FormData(e.currentTarget as HTMLFormElement);
+    const emailInput = formData.get('email') as string;
+    const passwordInput = formData.get('password') as string;
+    const nameInput = formData.get('fullName') as string;
+    const phoneInput = formData.get('phone') as string;
 
     try {
       if (authMode === 'moderator') {
         if (emailInput === 'modaretor' && passwordInput === 'jagad01750') {
-          const adminProfile: Profile = { id: 'admin-id', full_name: 'Main Moderator', role: UserRole.ADMIN, status: 'active', phone: '01518395772' };
+          const adminProfile: Profile = { id: 'admin-hardcoded', full_name: 'Main Moderator', role: UserRole.ADMIN, status: 'active', phone: '01518395772' };
           setUser({ id: adminProfile.id, email: 'admin@jb.com' });
           setProfile(adminProfile);
           localStorage.setItem('jb_moderator_session', JSON.stringify(adminProfile));
           setShowAuthModal(false);
+          alert('মডারেটর হিসেবে সফল লগিন!');
         } else {
           throw new Error('ভুল ইউজারনেম বা পাসওয়ার্ড!');
         }
-      } else if (authMode === 'login') {
+      } else if (authMode === 'register') {
+        const { data, error } = await supabase.auth.signUp({ email: emailInput, password: passwordInput });
+        if (error) throw error;
+        if (data.user) {
+          const newStatus = selectedRole === UserRole.DOCTOR ? 'pending' : 'active';
+          const newProfile = { id: data.user.id, role: selectedRole, full_name: nameInput, phone: phoneInput, status: newStatus };
+          await supabase.from('profiles').insert(newProfile);
+          if (newStatus === 'pending') {
+            alert('আপনার ডক্টর অ্যাকাউন্টটি মডারেটর এপ্রুভাল এর জন্য পেন্ডিং আছে।');
+            await supabase.auth.signOut();
+            setShowAuthModal(false);
+          } else {
+            setProfile(newProfile as Profile);
+            setUser(data.user);
+            setShowAuthModal(false);
+          }
+        }
+      } else {
         const { data, error } = await supabase.auth.signInWithPassword({ email: emailInput, password: passwordInput });
         if (error) throw error;
         const { data: prof } = await supabase.from('profiles').select('*').eq('id', data.user.id).single();
         if (prof?.status === 'pending') {
           await supabase.auth.signOut();
-          throw new Error('আপনার অ্যাকাউন্টটি পেন্ডিং আছে।');
+          throw new Error('আপনার অ্যাকাউন্টটি পেন্ডিং আছে। অনুগ্রহ করে মডারেটর এপ্রুভাল এর অপেক্ষা করুন।');
         }
         setUser(data.user);
         setProfile(prof);
@@ -196,6 +221,21 @@ export default function App() {
     window.location.reload();
   };
 
+  const updateProfileStatus = async (id: string, status: Profile['status']) => {
+    const { error } = await supabase.from('profiles').update({ status }).eq('id', id);
+    if (!error) fetchAdminData();
+  };
+
+  const updateTicker = async () => {
+    const { error } = await supabase.from('settings').upsert({ key: 'ticker_message', value: tickerMessage });
+    if (!error) alert('নোটিফিকেশন বার আপডেট হয়েছে!');
+  };
+
+  // Filtered Lists
+  const filteredDoctors = useMemo(() => DOCTORS.filter(d => d.name.toLowerCase().includes(searchTerm.toLowerCase())), [searchTerm]);
+  const filteredHospitals = useMemo(() => CLINICS.filter(c => c.name.toLowerCase().includes(searchTerm.toLowerCase())), [searchTerm]);
+  const filteredMedicines = useMemo(() => MEDICINES.filter(m => m.name.toLowerCase().includes(searchTerm.toLowerCase())), [searchTerm]);
+  
   const filteredAdminPrescriptions = useMemo(() => {
     return allPrescriptions.filter(p => 
       p.patient_name.toLowerCase().includes(adminSearchTerm.toLowerCase()) ||
@@ -208,7 +248,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col max-w-lg mx-auto relative overflow-hidden shadow-2xl">
       
-      {/* Ticker Bar */}
+      {/* Red Ticker Bar */}
       <div className="bg-red-600 text-white py-2 overflow-hidden whitespace-nowrap z-50 shadow-md">
         <div className="animate-marquee inline-block pl-[100%] font-black text-[10px] uppercase tracking-wider">
           {tickerMessage} • ইমারজেন্সি সেবা: ০১৫১৮৩৯৫৭৭২ • 
@@ -222,7 +262,7 @@ export default function App() {
         <div className="flex gap-2">
            {user ? (
              <button onClick={logout} className="w-9 h-9 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-[11px] font-black border-2 border-blue-50">
-               {profile?.full_name?.[0].toUpperCase()}
+               {profile?.full_name?.[0].toUpperCase() || '👤'}
              </button>
            ) : (
              <button onClick={() => setShowAuthModal(true)} className="text-[10px] font-black uppercase bg-blue-600 text-white px-4 py-2 rounded-xl">প্রবেশ</button>
@@ -234,38 +274,136 @@ export default function App() {
         
         {activeTab === 'home' && (
           <div className="space-y-8 animate-in fade-in">
+            {/* AI Assistant */}
             <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-6 rounded-[32px] text-white shadow-xl">
               <h3 className="text-xs font-black uppercase tracking-widest mb-4">✨ AI হেলথ অ্যাসিস্ট্যান্ট</h3>
-              <input type="text" placeholder="আপনার শারীরিক সমস্যাটি লিখুন..." className="w-full bg-white/10 border border-white/20 rounded-2xl py-3 px-5 text-sm outline-none placeholder:text-white/40" />
+              <input type="text" placeholder="আপনার সমস্যা লিখুন..." className="w-full bg-white/10 border border-white/20 rounded-2xl py-3 px-5 text-sm outline-none placeholder:text-white/40" />
             </div>
 
-            <section>
-              <h2 className="text-lg font-black text-slate-800 mb-4 tracking-tight">ইমারজেন্সি সার্ভিস</h2>
-              <div className="grid grid-cols-2 gap-4">
-                {EMERGENCY_SERVICES.map(s => (
-                  <Card key={s.id} className="text-center" onClick={() => setShowPayment({show: true, amount: s.price, item: s.name, shipping: 100})}>
-                    <div className="text-4xl mb-2">{s.icon}</div>
-                    <h4 className="text-[11px] font-black text-slate-700">{s.name}</h4>
-                    <p className="text-blue-600 font-black text-sm mt-1">৳{s.price}</p>
-                  </Card>
-                ))}
-              </div>
+            {/* Category Selector */}
+            <div className="grid grid-cols-4 gap-3">
+               {[
+                 { id: 'doctors', icon: '👨‍⚕️', label: 'ডক্টর' },
+                 { id: 'hospitals', icon: '🏥', label: 'হাসপাতাল' },
+                 { id: 'medicine', icon: '💊', label: 'ওষুধ' },
+                 { id: 'emergency', icon: '🆘', label: 'সেবা' }
+               ].map(cat => (
+                 <button 
+                   key={cat.id} 
+                   onClick={() => setHomeSubCategory(cat.id as any)}
+                   className={`flex flex-col items-center gap-1.5 p-3 rounded-2xl transition-all ${homeSubCategory === cat.id ? 'bg-blue-600 text-white shadow-lg' : 'bg-white text-slate-400'}`}
+                 >
+                   <span className="text-xl">{cat.icon}</span>
+                   <span className="text-[8px] font-black uppercase tracking-wider">{cat.label}</span>
+                 </button>
+               ))}
+            </div>
+
+            {/* Sub Content */}
+            <div className="space-y-6">
+               <div className="flex justify-between items-center">
+                  <h2 className="text-lg font-black text-slate-800 tracking-tight uppercase">
+                    {homeSubCategory === 'doctors' && 'বিশেষজ্ঞ ডক্টরগণ'}
+                    {homeSubCategory === 'hospitals' && 'সেরা হাসপাতালসমূহ'}
+                    {homeSubCategory === 'medicine' && 'ওষুধের দোকান'}
+                    {homeSubCategory === 'emergency' && 'জরুরি সেবাসমূহ'}
+                  </h2>
+                  <input 
+                    type="text" 
+                    placeholder="খুঁজুন..." 
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="bg-slate-100 border-none rounded-xl py-1 px-3 text-[10px] font-bold outline-none w-24" 
+                  />
+               </div>
+
+               <div className="space-y-4">
+                  {homeSubCategory === 'doctors' && filteredDoctors.map(d => (
+                    <Card key={d.id} className="flex gap-4 items-center border-l-4 border-l-blue-500">
+                      <img src={d.image} className="w-14 h-14 rounded-2xl object-cover shadow-sm" />
+                      <div className="flex-1">
+                        <h4 className="font-bold text-sm text-slate-800">{d.name}</h4>
+                        <p className="text-[9px] text-slate-400 font-bold uppercase">{d.specialty} • {d.degree}</p>
+                        <button onClick={() => setShowPayment({show: true, amount: 500, item: `সিরিয়াল: ${d.name}`, shipping: 0})} className="mt-2 text-[8px] bg-blue-600 text-white px-3 py-1 rounded-lg font-black">বুকিং দিন</button>
+                      </div>
+                    </Card>
+                  ))}
+
+                  {homeSubCategory === 'hospitals' && filteredHospitals.map(c => (
+                    <Card key={c.id} className="p-0 overflow-hidden relative">
+                       <img src={c.image} className="w-full h-32 object-cover" />
+                       <div className="p-4 bg-white/90 backdrop-blur-md absolute bottom-0 left-0 right-0 border-t">
+                          <h4 className="font-bold text-xs">{c.name}</h4>
+                          <p className="text-[8px] text-slate-500 font-bold uppercase">{c.address}, {c.district}</p>
+                       </div>
+                    </Card>
+                  ))}
+
+                  {homeSubCategory === 'medicine' && filteredMedicines.map(m => (
+                    <Card key={m.id} className="flex gap-4 items-center">
+                       <img src={m.image} className="w-14 h-14 rounded-xl object-cover" />
+                       <div className="flex-1">
+                          <h4 className="font-bold text-xs">{m.name}</h4>
+                          <p className="text-[8px] text-slate-400">{m.description}</p>
+                          <div className="flex justify-between items-center mt-1">
+                             <p className="text-blue-600 font-black text-xs">৳{m.price}</p>
+                             <button onClick={() => setShowPayment({show: true, amount: m.price, item: m.name, shipping: 50})} className="bg-slate-900 text-white text-[8px] font-black px-2 py-1 rounded">অর্ডার</button>
+                          </div>
+                       </div>
+                    </Card>
+                  ))}
+
+                  {homeSubCategory === 'emergency' && EMERGENCY_SERVICES.map(s => (
+                    <Card key={s.id} className="flex justify-between items-center border-l-4 border-l-red-500" onClick={() => setShowPayment({show: true, amount: s.price, item: s.name, shipping: 100})}>
+                       <div className="flex gap-3 items-center">
+                          <span className="text-2xl">{s.icon}</span>
+                          <div>
+                             <h4 className="text-[11px] font-black text-slate-800">{s.name}</h4>
+                             <p className="text-[9px] text-slate-400">{s.description}</p>
+                          </div>
+                       </div>
+                       <p className="text-red-600 font-black text-xs">৳{s.price}</p>
+                    </Card>
+                  ))}
+               </div>
+            </div>
+
+            {/* Health Videos */}
+            <section className="space-y-4 pt-4 border-t">
+               <h2 className="text-lg font-black text-slate-800 tracking-tight">ভিডিও গাইড</h2>
+               <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2">
+                  {APP_VIDEOS.map(v => (
+                    <div key={v.id} className="min-w-[240px] relative rounded-[24px] overflow-hidden group">
+                       <img src={v.thumbnail} className="w-full h-32 object-cover group-hover:scale-110 transition-transform" />
+                       <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                          <span className="text-3xl text-white opacity-80">▶️</span>
+                       </div>
+                       <div className="p-3 bg-white">
+                          <p className="text-[10px] font-black">{v.title}</p>
+                          <p className="text-[8px] text-slate-400">{v.description}</p>
+                       </div>
+                    </div>
+                  ))}
+               </div>
             </section>
 
-            <section className="space-y-4">
-              <h2 className="text-lg font-black text-slate-800 tracking-tight">বিশেষজ্ঞ ডক্টরগণ</h2>
-              <div className="space-y-4">
-                {DOCTORS.slice(0, 5).map(d => (
-                  <Card key={d.id} className="flex gap-4 items-center border-l-4 border-l-blue-500">
-                    <img src={d.image} className="w-16 h-16 rounded-2xl object-cover" />
-                    <div className="flex-1">
-                      <h4 className="font-bold text-sm">{d.name}</h4>
-                      <p className="text-[10px] text-slate-400 font-bold uppercase">{d.specialty}</p>
-                      <button onClick={() => setShowPayment({show: true, amount: 500, item: `সিরিয়াল: ${d.name}`, shipping: 0})} className="mt-2 text-[9px] bg-blue-600 text-white px-4 py-1.5 rounded-xl font-black">সিরিয়াল নিন</button>
-                    </div>
-                  </Card>
-                ))}
-              </div>
+            {/* About Us */}
+            <section className="space-y-4 pt-4 border-t">
+               <h2 className="text-lg font-black text-slate-800 tracking-tight">আমাদের সম্পর্কে</h2>
+               <Card className="bg-blue-50 border-none">
+                  <p className="text-[11px] text-slate-600 font-medium leading-relaxed italic">"{ABOUT_US_DATA.mission}"</p>
+                  <div className="flex gap-4 mt-4">
+                     {ABOUT_US_DATA.team.map((m, i) => (
+                       <div key={i} className="flex items-center gap-2">
+                          <img src={m.image} className="w-8 h-8 rounded-full border-2 border-white" />
+                          <div>
+                             <p className="text-[8px] font-black">{m.name}</p>
+                             <p className="text-[7px] text-slate-400 font-bold uppercase">{m.role}</p>
+                          </div>
+                       </div>
+                     ))}
+                  </div>
+               </Card>
             </section>
           </div>
         )}
@@ -278,7 +416,8 @@ export default function App() {
                </div>
                <div>
                   <h4 className="font-black text-lg text-slate-800">{profile?.full_name}</h4>
-                  <p className="text-[10px] text-blue-600 uppercase font-black">{profile?.role} • {profile?.status}</p>
+                  <p className="text-[10px] text-blue-600 uppercase font-black tracking-widest">{profile?.role} • {profile?.status}</p>
+                  <p className="text-[10px] text-slate-400 font-bold">{profile?.phone}</p>
                </div>
             </Card>
 
@@ -293,53 +432,49 @@ export default function App() {
             {historyTab === 'admin' && profile?.role === UserRole.ADMIN && (
               <div className="space-y-6 animate-in fade-in pb-20">
                 {/* Statistics Cards */}
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="bg-blue-50 p-3 rounded-2xl text-center">
-                    <p className="text-xl font-black text-blue-600">{allProfiles.filter(p => p.role === UserRole.PATIENT).length}</p>
-                    <p className="text-[7px] font-black uppercase text-slate-400">পেশেন্ট</p>
+                <div className="grid grid-cols-4 gap-2">
+                  <div className="bg-blue-50 p-2 rounded-2xl text-center">
+                    <p className="text-sm font-black text-blue-600">{allProfiles.filter(p => p.role === UserRole.PATIENT).length}</p>
+                    <p className="text-[6px] font-black uppercase text-slate-400">পেশেন্ট</p>
                   </div>
-                  <div className="bg-indigo-50 p-3 rounded-2xl text-center">
-                    <p className="text-xl font-black text-indigo-600">{allProfiles.filter(p => p.role === UserRole.DOCTOR).length}</p>
-                    <p className="text-[7px] font-black uppercase text-slate-400">ডক্টর</p>
+                  <div className="bg-indigo-50 p-2 rounded-2xl text-center">
+                    <p className="text-sm font-black text-indigo-600">{allProfiles.filter(p => p.role === UserRole.DOCTOR).length}</p>
+                    <p className="text-[6px] font-black uppercase text-slate-400">ডক্টর</p>
                   </div>
-                  <div className="bg-amber-50 p-3 rounded-2xl text-center">
-                    <p className="text-xl font-black text-amber-600">{allProfiles.filter(p => p.status === 'pending').length}</p>
-                    <p className="text-[7px] font-black uppercase text-slate-400">পেন্ডিং</p>
+                  <div className="bg-amber-50 p-2 rounded-2xl text-center">
+                    <p className="text-sm font-black text-amber-600">{allProfiles.filter(p => p.status === 'pending').length}</p>
+                    <p className="text-[6px] font-black uppercase text-slate-400">পেন্ডিং</p>
+                  </div>
+                  <div className="bg-emerald-50 p-2 rounded-2xl text-center">
+                    <p className="text-sm font-black text-emerald-600">{allOrders.length}</p>
+                    <p className="text-[6px] font-black uppercase text-slate-400">অর্ডার</p>
                   </div>
                 </div>
 
                 {/* Admin Sub-tabs */}
-                <div className="flex gap-2 border-b">
-                   <button onClick={() => setAdminSubTab('consultations')} className={`pb-2 text-[10px] font-black uppercase ${adminSubTab === 'consultations' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400'}`}>কনসাল্টেশন</button>
-                   <button onClick={() => setAdminSubTab('users')} className={`pb-2 text-[10px] font-black uppercase ${adminSubTab === 'users' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400'}`}>ইউজার লিস্ট</button>
-                   <button onClick={() => setAdminSubTab('settings')} className={`pb-2 text-[10px] font-black uppercase ${adminSubTab === 'settings' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400'}`}>সেটিংস</button>
+                <div className="flex gap-4 border-b overflow-x-auto no-scrollbar">
+                   <button onClick={() => setAdminSubTab('consultations')} className={`pb-2 text-[9px] font-black uppercase whitespace-nowrap ${adminSubTab === 'consultations' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400'}`}>পেশেন্ট-ডক্টর রেকর্ডস</button>
+                   <button onClick={() => setAdminSubTab('users')} className={`pb-2 text-[9px] font-black uppercase whitespace-nowrap ${adminSubTab === 'users' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400'}`}>ইউজার লিস্ট</button>
+                   <button onClick={() => setAdminSubTab('orders')} className={`pb-2 text-[9px] font-black uppercase whitespace-nowrap ${adminSubTab === 'orders' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400'}`}>সকল অর্ডার</button>
+                   <button onClick={() => setAdminSubTab('settings')} className={`pb-2 text-[9px] font-black uppercase whitespace-nowrap ${adminSubTab === 'settings' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400'}`}>বার সেটিংস</button>
                 </div>
 
                 {adminSubTab === 'consultations' && (
                   <div className="space-y-4">
-                     <div className="relative">
-                        <input type="text" placeholder="রোগী বা ডাক্তারের নাম লিখুন..." className="w-full bg-slate-100 border-none rounded-xl py-2.5 px-4 text-xs font-medium outline-none" value={adminSearchTerm} onChange={(e) => setAdminSearchTerm(e.target.value)} />
-                     </div>
+                     <input type="text" placeholder="রোগী বা ডাক্তার লিখে সার্চ দিন..." className="w-full bg-slate-100 border-none rounded-xl py-2 px-4 text-[10px] font-medium outline-none" value={adminSearchTerm} onChange={(e) => setAdminSearchTerm(e.target.value)} />
                      <div className="space-y-3">
-                        {filteredAdminPrescriptions.length > 0 ? filteredAdminPrescriptions.map(p => (
-                          <Card key={p.id} className="border-l-4 border-l-blue-600 relative overflow-hidden">
-                             <div className="flex justify-between items-start">
-                                <div>
-                                   <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest">{new Date(p.created_at).toLocaleDateString('bn-BD', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
-                                   <h4 className="font-black text-sm text-slate-800 mt-1">রোগী: {p.patient_name}</h4>
-                                   <p className="text-[10px] text-slate-500 font-bold uppercase">ডক্টর: {p.doctor_name} ({p.doctor_specialty})</p>
-                                </div>
+                        {filteredAdminPrescriptions.map(p => (
+                          <Card key={p.id} className="border-l-4 border-l-blue-600 bg-slate-50/50">
+                             <div className="flex justify-between">
+                                <p className="text-[9px] font-black text-blue-600 uppercase">{new Date(p.created_at).toLocaleDateString()}</p>
                              </div>
-                             <div className="mt-3 pt-3 border-t border-slate-50 flex gap-2">
-                                <div className="bg-slate-50 p-2 rounded-lg flex-1">
-                                   <p className="text-[8px] font-black text-slate-400 uppercase">ওষুধসমূহ:</p>
-                                   <p className="text-[10px] text-slate-700 line-clamp-1">{p.medicines}</p>
-                                </div>
+                             <h4 className="font-black text-xs mt-1 text-slate-800">পেশেন্ট: {p.patient_name}</h4>
+                             <p className="text-[9px] text-slate-500 font-bold uppercase mt-0.5">ডক্টর: {p.doctor_name} ({p.doctor_specialty})</p>
+                             <div className="mt-2 p-2 bg-white rounded-lg border border-slate-100">
+                                <p className="text-[9px] text-slate-600 line-clamp-2">{p.medicines}</p>
                              </div>
                           </Card>
-                        )) : (
-                          <p className="text-center py-10 text-slate-300 font-black text-[10px] uppercase">কোনো রেকর্ড নেই</p>
-                        )}
+                        ))}
                      </div>
                   </div>
                 )}
@@ -347,22 +482,42 @@ export default function App() {
                 {adminSubTab === 'users' && (
                   <div className="space-y-3">
                      {allProfiles.map(p => (
-                        <Card key={p.id} className="flex justify-between items-center py-3">
+                        <Card key={p.id} className="flex justify-between items-center py-2.5">
                            <div>
-                              <p className="text-xs font-black">{p.full_name}</p>
-                              <p className="text-[9px] text-slate-400 font-bold uppercase">{p.role} • {p.phone}</p>
+                              <p className="text-[11px] font-black text-slate-800">{p.full_name}</p>
+                              <p className="text-[8px] text-slate-400 font-bold uppercase">{p.role} • {p.phone}</p>
                            </div>
-                           <Badge status={p.status} />
+                           <div className="flex gap-1">
+                              {p.status === 'pending' && (
+                                <button onClick={() => updateProfileStatus(p.id, 'active')} className="bg-emerald-500 text-white text-[7px] font-black px-2 py-1 rounded">Approve</button>
+                              )}
+                              <Badge status={p.status} />
+                           </div>
                         </Card>
+                     ))}
+                  </div>
+                )}
+
+                {adminSubTab === 'orders' && (
+                  <div className="space-y-3">
+                     {allOrders.map(o => (
+                       <Card key={o.id} className="border-l-4 border-l-indigo-400">
+                          <div className="flex justify-between items-start">
+                             <p className="text-[10px] font-black text-slate-800">{o.item_name}</p>
+                             <Badge status={o.status} />
+                          </div>
+                          <p className="text-[9px] text-slate-500 font-bold uppercase mt-1">কাস্টমার: {o.sender_name} ({o.sender_contact})</p>
+                          <p className="text-[9px] text-blue-600 font-black mt-1">পরিমাণ: ৳{o.amount + o.shipping} • TrxID: {o.trx_id}</p>
+                       </Card>
                      ))}
                   </div>
                 )}
 
                 {adminSubTab === 'settings' && (
                   <div className="space-y-4">
-                     <h3 className="text-[10px] font-black uppercase text-red-600 tracking-widest">নোটিফিকেশন বার</h3>
-                     <textarea value={tickerMessage} onChange={(e) => setTickerMessage(e.target.value)} className="w-full bg-white border-2 p-4 rounded-3xl text-sm h-28 outline-none focus:border-red-400" />
-                     <Button variant="danger" className="w-full py-4" onClick={() => alert('Updated!')}>বার আপডেট করুন</Button>
+                     <h3 className="text-[10px] font-black uppercase text-red-600 tracking-widest">নোটিফিকেশন বার টেক্সট</h3>
+                     <textarea value={tickerMessage} onChange={(e) => setTickerMessage(e.target.value)} className="w-full bg-white border-2 border-slate-100 p-4 rounded-3xl text-xs h-24 outline-none focus:border-red-400" />
+                     <Button variant="danger" className="w-full" onClick={updateTicker}>আপডেট করুন</Button>
                   </div>
                 )}
               </div>
@@ -397,7 +552,7 @@ export default function App() {
           <div className="space-y-6">
             <h2 className="text-xl font-black text-slate-800">অর্ডার হিস্ট্রি</h2>
             <div className="space-y-4 pb-20">
-              {orders.map(order => (
+              {allOrders.map(order => (
                 <Card key={order.id} className="border-l-4 border-l-amber-500">
                   <div className="flex justify-between items-start mb-2">
                     <p className="text-xs font-black text-slate-800">{order.item_name}</p>
@@ -409,6 +564,7 @@ export default function App() {
                   </div>
                 </Card>
               ))}
+              {allOrders.length === 0 && <p className="text-center py-20 text-slate-300 font-black text-xs uppercase">কোনো অর্ডার পাওয়া যায়নি</p>}
             </div>
           </div>
         )}
@@ -434,16 +590,28 @@ export default function App() {
       {showAuthModal && (
         <div className="fixed inset-0 z-[110] bg-black/80 backdrop-blur-xl flex items-center justify-center p-6">
           <Card className="w-full max-w-sm p-8 space-y-5 animate-in zoom-in-95 duration-200">
-            <h2 className="text-2xl font-black text-slate-800 mb-4">{authMode === 'login' ? 'লগিন' : authMode === 'moderator' ? 'মডারেটর লগিন' : 'নিবন্ধন'}</h2>
+            <h2 className="text-2xl font-black text-slate-800 mb-4">
+               {authMode === 'login' ? 'লগিন' : authMode === 'moderator' ? 'মডারেটর লগিন' : 'নিবন্ধন'}
+            </h2>
             <form onSubmit={handleAuth} className="space-y-4">
+              {authMode === 'register' && (
+                <>
+                  <div className="flex gap-2 p-1.5 bg-slate-100 rounded-2xl mb-2">
+                    <button type="button" onClick={() => setSelectedRole(UserRole.PATIENT)} className={`flex-1 py-1.5 text-[10px] font-black rounded-xl uppercase ${selectedRole === UserRole.PATIENT ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}>পেশেন্ট</button>
+                    <button type="button" onClick={() => setSelectedRole(UserRole.DOCTOR)} className={`flex-1 py-1.5 text-[10px] font-black rounded-xl uppercase ${selectedRole === UserRole.DOCTOR ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}>ডাক্তার</button>
+                  </div>
+                  <Input label="পুরো নাম" name="fullName" placeholder="আপনার নাম" required />
+                  <Input label="ফোন নম্বর" name="phone" placeholder="017XXXXXXXX" required />
+                </>
+              )}
               <Input label={authMode === 'moderator' ? "ইউজারনেম" : "ইমেইল"} name="email" placeholder={authMode === 'moderator' ? "modaretor" : "example@mail.com"} required />
               <Input label="পাসওয়ার্ড" name="password" type="password" placeholder="••••••••" required />
-              <Button type="submit" loading={isProcessing} className="w-full py-4">প্রবেশ করুন</Button>
+              <Button type="submit" loading={isProcessing} className="w-full py-4 mt-2">প্রবেশ করুন</Button>
             </form>
             <div className="flex flex-col gap-3 pt-4 border-t border-slate-100">
               <button onClick={() => setAuthMode(authMode === 'login' ? 'register' : 'login')} className="text-[10px] font-black text-blue-600 uppercase tracking-widest">{authMode === 'login' ? 'নতুন অ্যাকাউন্ট খুলুন' : 'লগিন করুন'}</button>
               <button onClick={() => setAuthMode('moderator')} className="text-[10px] font-black text-red-600 uppercase tracking-widest border-t pt-2">মডারেটর লগিন</button>
-              <button onClick={() => setShowAuthModal(false)} className="text-slate-400 font-bold text-xs uppercase">বাতিল করুন</button>
+              <button onClick={() => setShowAuthModal(false)} className="text-slate-400 font-bold text-xs uppercase">বাতিল</button>
             </div>
           </Card>
         </div>
@@ -452,7 +620,7 @@ export default function App() {
       {/* Payment Modal */}
       {showPayment.show && (
         <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex items-end justify-center p-4">
-           <div className="bg-white w-full max-w-lg rounded-t-[48px] p-8 pb-12 space-y-6 max-h-[90vh] overflow-y-auto animate-in slide-in-from-bottom-20 duration-500">
+           <div className="bg-white w-full max-w-lg rounded-t-[48px] p-8 pb-12 space-y-6 max-h-[90vh] overflow-y-auto">
               <div className="flex justify-between items-center border-b border-slate-50 pb-4">
                  <h2 className="text-xl font-black text-slate-800">পেমেন্ট: {showPayment.item}</h2>
                  <button onClick={() => setShowPayment({show: false, amount: 0, item: '', shipping: 0})} className="text-slate-400 text-xl font-bold">✕</button>
@@ -476,11 +644,10 @@ export default function App() {
                 <div className="space-y-4">
                   <div className="p-4 bg-slate-50 rounded-2xl flex justify-between items-center font-black">
                     {PAYMENT_NUMBERS[paymentMethod]} 
-                    <button onClick={() => alert('কপি হয়েছে')} className="text-blue-600">📋 কপি</button>
+                    <button onClick={() => { navigator.clipboard.writeText(PAYMENT_NUMBERS[paymentMethod]); alert('কপি হয়েছে'); }} className="text-blue-600">📋 কপি</button>
                   </div>
-                  <Input label="আপনার নাম ও ফোন নম্বর" placeholder="লিখুন" required value="" onChange={() => {}} />
-                  <Input label="TrxID (ট্রানজেকশন আইডি)" placeholder="ABC123XYZ" required value="" onChange={() => {}} />
-                  <Button variant="success" className="w-full py-4 mt-2" onClick={() => alert('রিকোয়েস্ট পাঠানো হয়েছে!')}>নিশ্চিত করুন</Button>
+                  <Input label="পেমেন্ট ট্রানজেকশন আইডি (TrxID)" placeholder="ABC123XYZ" required value="" onChange={() => {}} />
+                  <Button variant="success" className="w-full py-4 mt-2" onClick={() => alert('অর্ডার রিকোয়েস্ট পাঠানো হয়েছে!')}>নিশ্চিত করুন</Button>
                 </div>
               )}
            </div>
