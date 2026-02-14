@@ -1,0 +1,23 @@
+
+{
+  "name": "JB Healthcare - Your Digital Doctor",
+  "short_name": "JB Health",
+  "description": "Comprehensive healthcare platform for doctors and patients.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "icons": [
+    {
+      "src": "https://picsum.photos/192/192",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://picsum.photos/512/512",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
