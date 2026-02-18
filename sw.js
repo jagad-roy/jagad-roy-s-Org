@@ -1,10 +1,11 @@
 
-const CACHE_NAME = 'jb-healthcare-v1';
+const CACHE_NAME = 'jb-healthcare-v2';
 const ASSETS = [
   './',
   './index.html',
-  './index.tsx',
-  './manifest.json'
+  './manifest.json',
+  'https://cdn.tailwindcss.com',
+  'https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap'
 ];
 
 self.addEventListener('install', (event) => {
@@ -13,12 +14,25 @@ self.addEventListener('install', (event) => {
       return cache.addAll(ASSETS);
     })
   );
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((keys) => {
+      return Promise.all(
+        keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
+      );
+    })
+  );
 });
 
 self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request).then((response) => {
-      return response || fetch(event.request);
+      return response || fetch(event.request).catch(() => {
+        // Fallback for offline if needed
+      });
     })
   );
 });

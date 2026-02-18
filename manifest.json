@@ -1,10 +1,11 @@
 
 {
-  "name": "JB Healthcare - Your Digital Doctor",
+  "name": "JB Healthcare",
   "short_name": "JB Health",
-  "description": "Comprehensive healthcare platform for doctors and patients.",
+  "description": "জেবি হেলথকেয়ার - আপনার ডিজিটাল স্বাস্থ্য সঙ্গী।",
   "start_url": "./index.html",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#ffffff",
   "theme_color": "#2563eb",
   "icons": [
@@ -18,6 +19,16 @@
       "src": "https://picsum.photos/512/512",
       "sizes": "512x512",
       "type": "image/png"
+    }
+  ],
+  "categories": ["medical", "health"],
+  "screenshots": [
+    {
+      "src": "https://picsum.photos/1080/1920?health=1",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Home Screen"
     }
   ]
 }

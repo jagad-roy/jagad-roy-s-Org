@@ -6,9 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>JB Healthcare - আপনার ডিজিটাল স্বাস্থ্য সঙ্গী</title>
     
-    <!-- PWA Meta Tags -->
+    <!-- PWA / Mobile Optimizations -->
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#2563eb">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="JB Health">
@@ -34,6 +35,8 @@
             padding: 0;
             -webkit-tap-highlight-color: transparent;
             overflow-x: hidden;
+            /* Prevent bouncing on mobile */
+            overscroll-behavior-y: contain;
         }
         .no-scrollbar::-webkit-scrollbar {
             display: none;
@@ -46,10 +49,16 @@
             100% { transform: translateX(-100%); }
         }
         .animate-marquee {
-            animation: marquee 20s linear infinite;
+            animation: marquee 25s linear infinite;
         }
         .animate-marquee:hover {
             animation-play-state: paused;
+        }
+        /* Mobile specific adjustments */
+        @media (max-width: 640px) {
+            .mobile-p-safe {
+                padding-bottom: 140px;
+            }
         }
     </style>
     <script type="importmap">
@@ -65,15 +74,25 @@
 }
 </script>
 </head>
-<body class="antialiased">
+<body class="antialiased select-none">
     <div id="root"></div>
     <script type="module" src="./index.tsx"></script>
     <script>
-      // Register Service Worker for PWA functionality
+      // Service Worker registration with update detection
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('./sw.js')
-            .then(reg => console.log('Service Worker registered!'))
+            .then(reg => {
+              console.log('App is ready to work offline.');
+              reg.onupdatefound = () => {
+                const installingWorker = reg.installing;
+                installingWorker.onstatechange = () => {
+                  if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    console.log('New version available. Please refresh.');
+                  }
+                };
+              };
+            })
             .catch(err => console.log('SW registration failed:', err));
         });
       }
