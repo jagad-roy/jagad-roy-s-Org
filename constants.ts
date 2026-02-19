@@ -3,6 +3,90 @@ import { Doctor, Clinic, Medicine } from './types';
 
 export const DISTRICTS = ['Dhaka', 'Chattogram', 'Sylhet', 'Rajshahi', 'Khulna', 'Barishal', 'Rangpur', 'Mymensingh', 'Nilphamari'];
 
+export const SPECIALTIES = [
+  { id: 'medicine', name: 'Medicine', icon: '💊', bnName: 'মেডিসিন' },
+  { id: 'cardiology', name: 'Cardiology', icon: '🫀', bnName: 'হৃদরোগ' },
+  { id: 'neuromedicine', name: 'Neuromedicine', icon: '🧠', bnName: 'নিউরোলজি' },
+  { id: 'gynecology', name: 'Gynecology', icon: '🤰', bnName: 'গাইনী' },
+  { id: 'pediatrics', name: 'Pediatrics', icon: '👶', bnName: 'শিশু' },
+  { id: 'orthopedics', name: 'Orthopedics', icon: '🦴', bnName: 'হাড়-জোড়া' },
+  { id: 'surgery', name: 'Surgery', icon: '🔪', bnName: 'সার্জারি' },
+  { id: 'ent', name: 'ENT', icon: '👂', bnName: 'নাক-কান-গলা' },
+  { id: 'dermatology', name: 'Dermatology', icon: '✨', bnName: 'চর্ম-যৌন' },
+  { id: 'urology', name: 'Urology', icon: '💧', bnName: 'ইউরোলজি' },
+  { id: 'endocrinology', name: 'Endocrinology', icon: '🩸', bnName: 'ডায়াবেটিস' },
+  { id: 'ophthalmology', name: 'Ophthalmology', icon: '👁️', bnName: 'চক্ষু' },
+  { id: 'psychiatry', name: 'Psychiatry', icon: '🧘', bnName: 'মানসিক' },
+  { id: 'gastroenterology', name: 'Gastroenterology', icon: '🍔', bnName: 'লিভার-পরিপাক' },
+  { id: 'nephrology', name: 'Nephrology', icon: '🧪', bnName: 'কিডনি' },
+  { id: 'chest', name: 'Chest & Respiratory', icon: '🫁', bnName: 'বক্ষব্যাধি' },
+  { id: 'physical_medicine', name: 'Physical Medicine', icon: '🏃', bnName: 'ফিজিওথেরাপি' },
+  { id: 'dentistry', name: 'Dentistry', icon: '🦷', bnName: 'দন্ত' },
+];
+
+export const DOCTORS: Doctor[] = [
+  // --- Cardiology ---
+  { id: 'gs5', name: 'Dr. Md. Asad Alam', degree: 'MBBS, BCS (Health), CCD (BIRDEM), D-Card (BSMMU)', specialty: 'Cardiology', districts: ['Nilphamari'], clinics: ['c-greensign'], schedule: 'Daily: 3 PM - 9 PM', availableToday: true, rating: 4.7, image: 'https://picsum.photos/200/200?doc=1' },
+  { id: 'gs6', name: 'Dr. Md. Mehfuz Ali', degree: 'MBBS, BCS (Health), FCPS (Medicine), D-Card', specialty: 'Cardiology', districts: ['Nilphamari'], clinics: ['c-greensign'], schedule: 'Sat-Thu: 3 PM - 10 PM', availableToday: true, rating: 4.8, image: 'https://picsum.photos/200/200?doc=2' },
+  { id: 'ib7', name: 'Dr. Md. Al-Amin', degree: 'MBBS, BCS, MD (Cardiology)', specialty: 'Cardiology', districts: ['Nilphamari'], clinics: ['c-ibadat'], schedule: 'Fri: 9 AM - 5 PM', availableToday: false, rating: 4.8, image: 'https://picsum.photos/200/200?doc=3' },
+  { id: 'c-new1', name: 'Dr. Sarah Johnson', degree: 'MBBS, MD, FCPS (Cardiology)', specialty: 'Cardiology', districts: ['Dhaka'], clinics: ['c-madina'], schedule: 'Mon, Wed: 5 PM - 8 PM', availableToday: true, rating: 4.9, image: 'https://picsum.photos/200/200?doc=4' },
+
+  // --- Neuromedicine ---
+  { id: 'gs4', name: 'Dr. Md. Asaduzzaman (Asad)', degree: 'MBBS, BCS (Health), FCPS (Medicine), MD (Neurology)', specialty: 'Neuromedicine', districts: ['Nilphamari'], clinics: ['c-greensign'], schedule: 'Fri: 10 AM - 8 PM', availableToday: false, rating: 4.9, image: 'https://picsum.photos/200/200?doc=5' },
+  { id: 'md2', name: 'Dr. Md. Kaikobad Hossain', degree: 'MBBS, BCS, FCPS, MD (Neurology)', specialty: 'Neuromedicine', districts: ['Nilphamari'], clinics: ['c-madina'], schedule: 'Mon-Wed: 3 PM - 8 PM', availableToday: true, rating: 4.9, image: 'https://picsum.photos/200/200?doc=6' },
+  { id: 'nm-new1', name: 'Dr. Robert Miller', degree: 'MBBS, MD (Neurology), PhD', specialty: 'Neuromedicine', districts: ['Chattogram'], clinics: ['c-ar'], schedule: 'Sun, Tue: 4 PM - 9 PM', availableToday: true, rating: 4.7, image: 'https://picsum.photos/200/200?doc=7' },
+
+  // --- Gynecology ---
+  { id: 'gs1', name: 'Dr. Obaida Nasnin (Mukta)', degree: 'MBBS, BCS (Health), DGO (DMC)', specialty: 'Gynecology', districts: ['Nilphamari'], clinics: ['c-greensign'], schedule: 'Daily: 4 PM - 9 PM', availableToday: true, rating: 4.9, image: 'https://picsum.photos/200/200?doc=8' },
+  { id: 'gs7', name: 'Dr. Rumana Afroz', degree: 'MBBS, PGT, EOCT, DMU, CCD, MPH', specialty: 'Gynecology', districts: ['Nilphamari'], clinics: ['c-greensign'], schedule: 'Sat-Thu: 4 PM-10 PM', availableToday: true, rating: 4.9, image: 'https://picsum.photos/200/200?doc=9' },
+  { id: 'gyn-new1', name: 'Dr. Emily Watson', degree: 'MBBS, MS (Gynae & Obs)', specialty: 'Gynecology', districts: ['Nilphamari'], clinics: ['c-ibadat'], schedule: 'Daily: 5 PM - 8 PM', availableToday: true, rating: 4.8, image: 'https://picsum.photos/200/200?doc=10' },
+
+  // --- Endocrinology (Diabetes) ---
+  { id: 'end1', name: 'Dr. Ahmed Tanvir', degree: 'MBBS, FCPS (Medicine), MD (Endocrinology)', specialty: 'Endocrinology', districts: ['Nilphamari'], clinics: ['c-madina'], schedule: 'Fri: 4 PM - 9 PM', availableToday: false, rating: 4.9, image: 'https://picsum.photos/200/200?doc=11' },
+  { id: 'end2', name: 'Dr. Linda Garcia', degree: 'MBBS, CCD (BIRDEM), MD (Endo)', specialty: 'Endocrinology', districts: ['Dhaka'], clinics: ['c-ar'], schedule: 'Sat, Mon: 3 PM - 7 PM', availableToday: true, rating: 4.7, image: 'https://picsum.photos/200/200?doc=12' },
+
+  // --- Gastroenterology ---
+  { id: 'gas1', name: 'Dr. Michael Chen', degree: 'MBBS, MD (Gastroenterology)', specialty: 'Gastroenterology', districts: ['Nilphamari'], clinics: ['c-greensign'], schedule: 'Tue, Thu: 4 PM - 9 PM', availableToday: true, rating: 4.8, image: 'https://picsum.photos/200/200?doc=13' },
+  { id: 'gas2', name: 'Dr. Md. Rafiqul Bari', degree: 'MBBS, FCPS (Gastro)', specialty: 'Gastroenterology', districts: ['Nilphamari'], clinics: ['c-ibadat'], schedule: 'Daily: 6 PM - 10 PM', availableToday: true, rating: 4.6, image: 'https://picsum.photos/200/200?doc=14' },
+
+  // --- ENT ---
+  { id: 'ent1', name: 'Dr. David Brown', degree: 'MBBS, DLO, MS (ENT)', specialty: 'ENT', districts: ['Nilphamari'], clinics: ['c-madina'], schedule: 'Mon-Thu: 3 PM - 8 PM', availableToday: true, rating: 4.8, image: 'https://picsum.photos/200/200?doc=15' },
+  { id: 'ent2', name: 'Dr. Sophia Taylor', degree: 'MBBS, FCPS (ENT)', specialty: 'ENT', districts: ['Sylhet'], clinics: ['c-greensign'], schedule: 'Daily: 4 PM - 9 PM', availableToday: true, rating: 4.7, image: 'https://picsum.photos/200/200?doc=16' },
+
+  // --- Orthopedics ---
+  { id: 'ort1', name: 'Dr. James Wilson', degree: 'MBBS, MS (Orthopedics)', specialty: 'Orthopedics', districts: ['Nilphamari'], clinics: ['c-ar'], schedule: 'Sat-Thu: 5 PM - 9 PM', availableToday: true, rating: 4.9, image: 'https://picsum.photos/200/200?doc=17' },
+  { id: 'ort2', name: 'Dr. Patricia Moore', degree: 'MBBS, D-Ortho', specialty: 'Orthopedics', districts: ['Nilphamari'], clinics: ['c-madina'], schedule: 'Daily: 3 PM - 7 PM', availableToday: true, rating: 4.8, image: 'https://picsum.photos/200/200?doc=18' },
+
+  // --- Surgery ---
+  { id: 'sur1', name: 'Dr. William Anderson', degree: 'MBBS, FCPS (Surgery)', specialty: 'Surgery', districts: ['Nilphamari'], clinics: ['c-greensign'], schedule: 'Daily: 4 PM - 10 PM', availableToday: true, rating: 4.7, image: 'https://picsum.photos/200/200?doc=19' },
+  { id: 'sur2', name: 'Dr. Barbara Thomas', degree: 'MBBS, MS (General Surgery)', specialty: 'Surgery', districts: ['Khulna'], clinics: ['c-ibadat'], schedule: 'Fri: 10 AM - 5 PM', availableToday: false, rating: 4.9, image: 'https://picsum.photos/200/200?doc=20' },
+
+  // --- Urology ---
+  { id: 'uro1', name: 'Dr. Richard Jackson', degree: 'MBBS, MS (Urology)', specialty: 'Urology', districts: ['Nilphamari'], clinics: ['c-ar'], schedule: 'Mon, Wed: 3 PM - 8 PM', availableToday: true, rating: 4.8, image: 'https://picsum.photos/200/200?doc=21' },
+  { id: 'uro2', name: 'Dr. Mary White', degree: 'MBBS, MD (Nephrology)', specialty: 'Urology', districts: ['Nilphamari'], clinics: ['c-madina'], schedule: 'Sun, Tue: 4 PM - 9 PM', availableToday: true, rating: 4.7, image: 'https://picsum.photos/200/200?doc=22' },
+
+  // --- Ophthalmology (Eye) ---
+  { id: 'eye1', name: 'Dr. Charles Harris', degree: 'MBBS, DO, MS (Eye)', specialty: 'Ophthalmology', districts: ['Nilphamari'], clinics: ['c-greensign'], schedule: 'Daily: 9 AM - 2 PM', availableToday: true, rating: 4.9, image: 'https://picsum.photos/200/200?doc=23' },
+  { id: 'eye2', name: 'Dr. Elizabeth Clark', degree: 'MBBS, FCPS (Eye)', specialty: 'Ophthalmology', districts: ['Nilphamari'], clinics: ['c-ibadat'], schedule: 'Sat-Thu: 4 PM - 8 PM', availableToday: true, rating: 4.8, image: 'https://picsum.photos/200/200?doc=24' },
+
+  // --- Psychiatry ---
+  { id: 'psy1', name: 'Dr. Joseph Lewis', degree: 'MBBS, MD (Psychiatry)', specialty: 'Psychiatry', districts: ['Nilphamari'], clinics: ['c-ar'], schedule: 'Sat, Mon: 5 PM - 9 PM', availableToday: true, rating: 4.7, image: 'https://picsum.photos/200/200?doc=25' },
+  { id: 'psy2', name: 'Dr. Margaret Walker', degree: 'MBBS, FCPS (Mental Health)', specialty: 'Psychiatry', districts: ['Nilphamari'], clinics: ['c-madina'], schedule: 'Daily: 6 PM - 10 PM', availableToday: true, rating: 4.8, image: 'https://picsum.photos/200/200?doc=26' },
+
+  // --- Nephrology ---
+  { id: 'nep1', name: 'Dr. Thomas Hall', degree: 'MBBS, MD (Nephrology)', specialty: 'Nephrology', districts: ['Nilphamari'], clinics: ['c-greensign'], schedule: 'Wed, Fri: 3 PM - 8 PM', availableToday: false, rating: 4.9, image: 'https://picsum.photos/200/200?doc=27' },
+
+  // --- Chest & Respiratory ---
+  { id: 'che1', name: 'Dr. Nancy Young', degree: 'MBBS, DTCD, MD (Chest)', specialty: 'Chest & Respiratory', districts: ['Nilphamari'], clinics: ['c-ibadat'], schedule: 'Daily: 4 PM - 9 PM', availableToday: true, rating: 4.7, image: 'https://picsum.photos/200/200?doc=28' },
+
+  // --- Physical Medicine ---
+  { id: 'phy1', name: 'Dr. Kevin Wright', degree: 'MBBS, FCPS (Physical Medicine)', specialty: 'Physical Medicine', districts: ['Nilphamari'], clinics: ['c-ar'], schedule: 'Sat-Thu: 10 AM - 5 PM', availableToday: true, rating: 4.8, image: 'https://picsum.photos/200/200?doc=29' },
+
+  // --- Medicine (General) ---
+  { id: 'med1', name: 'Dr. Brian King', degree: 'MBBS, BCS (Health), FCPS (Medicine)', specialty: 'Medicine', districts: ['Nilphamari'], clinics: ['c-madina'], schedule: 'Daily: 3 PM - 10 PM', availableToday: true, rating: 4.9, image: 'https://picsum.photos/200/200?doc=30' },
+  { id: 'med2', name: 'Dr. Karen Scott', degree: 'MBBS, MD (Internal Medicine)', specialty: 'Medicine', districts: ['Nilphamari'], clinics: ['c-greensign'], schedule: 'Sat-Thu: 4 PM - 9 PM', availableToday: true, rating: 4.8, image: 'https://picsum.photos/200/200?doc=31' },
+];
+
 export const EMERGENCY_SERVICES = [
   { id: 'e1', name: 'ECG (ইসিজি)', price: 600, icon: '💓', description: 'বাসায় গিয়ে ইসিজি করা হয়' },
   { id: 'e2', name: 'Blood Collection', price: 200, icon: '🩸', description: 'ল্যাব টেস্টের জন্য রক্ত সংগ্রহ' },
@@ -111,76 +195,21 @@ export const LAB_TESTS = [
 export const ABOUT_US_DATA = {
   mission: "আমাদের লক্ষ্য হলো প্রযুক্তির মাধ্যমে স্বাস্থ্যসেবাকে বাংলাদেশের প্রতিটি মানুষের দোরগোড়ায় পৌঁছে দেওয়া।",
   team: [
-    { name: "জগদীশ রায়", role: "প্রতিষ্ঠাতা ও সিইও", image: "https://picsum.photos/100/100?u=1" },
-    { name: "ডাঃ রফিকুল ইসলাম", role: "প্রধান চিকিৎসা উপদেষ্টা", image: "https://picsum.photos/100/100?u=2" }
+    { name: "Jagadish Roy", role: "Founder & CEO", image: "https://picsum.photos/100/100?u=1" },
+    { name: "Dr. Rafiqul Islam", role: "Chief Medical Advisor", image: "https://picsum.photos/100/100?u=2" }
   ]
 };
 
 export const MEDICINES: Medicine[] = [
-  { id: 'm1', name: 'Napa Extend', price: 20, discount: 5, image: 'https://picsum.photos/200/200?med=1', description: 'ব্যথানাশক' },
-  { id: 'm2', name: 'Seclo 20', price: 150, discount: 10, image: 'https://picsum.photos/200/200?med=2', description: 'এসিডিটি' },
-  { id: 'm3', name: 'Fexo 120', price: 90, discount: 0, image: 'https://picsum.photos/200/200?med=3', description: 'এলার্জি' },
+  { id: 'm1', name: 'Napa Extend', price: 20, discount: 5, image: 'https://picsum.photos/200/200?med=1', description: 'Pain relief' },
+  { id: 'm2', name: 'Seclo 20', price: 150, discount: 10, image: 'https://picsum.photos/200/200?med=2', description: 'Acidity' },
+  { id: 'm3', name: 'Fexo 120', price: 90, discount: 0, image: 'https://picsum.photos/200/200?med=3', description: 'Allergy' },
 ];
 
 export const CLINICS: Clinic[] = [
-  { id: 'c-madina', name: 'মদিনা ডায়াগনস্টিক ক্লিনিক এন্ড কনসালটেশন', district: 'Nilphamari', address: 'জেনারেল হাসপাতাল সড়ক ,হাসপাল মোড়, নীলফামারী', doctors: ['md1','md2','md3','md4','md5','md6','md7','md8','md9','md10','md11'], image: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&q=80&w=800' },
-  { id: 'c-greensign', name: 'গ্রীন সাইন হাসপাতাল', district: 'Nilphamari', address: 'নীলফামারী সদর', doctors: ['gs1', 'gs2', 'gs3', 'gs4', 'gs5', 'gs6', 'gs7', 'gs8', 'gs9', 'gs10', 'gs11', 'gs12', 'gs13'], image: 'https://images.unsplash.com/photo-1512678080530-7760d81faba6?auto=format&fit=crop&q=80&w=800' },
+  { id: 'c-madina', name: 'Madina Diagnostic Clinic & Consultation', district: 'Nilphamari', address: 'General Hospital Road, Hospital Mor, Nilphamari', doctors: ['md1','md2','md3','md4','md5','md6','md7','md8','md9','md10','md11'], image: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&q=80&w=800' },
+  { id: 'c-greensign', name: 'Green Sign Hospital', district: 'Nilphamari', address: 'Nilphamari Sadar', doctors: ['gs1', 'gs2', 'gs3', 'gs4', 'gs5', 'gs6', 'gs7', 'gs8', 'gs9', 'gs10', 'gs11', 'gs12', 'gs13'], image: 'https://images.unsplash.com/photo-1512678080530-7760d81faba6?auto=format&fit=crop&q=80&w=800' },
   { id: 'c-ar', name: 'A.R. General Hospital', district: 'Nilphamari', address: 'Sadar Hospital Road, Nilphamari', doctors: ['ar1','ar2','ar3','ar4','ar5','ar6','ar7','ar8','ar9','ar10','ar11'], image: 'https://images.unsplash.com/photo-1587350859728-117699f8aee1?auto=format&fit=crop&q=80&w=800' },
-  { id: 'c-mouno', name: 'মৌন জেনারেল হাসপাতাল', district: 'Nilphamari', address: 'নীলফামারী সদর', doctors: ['mou1'], image: 'https://images.unsplash.com/photo-1586773860418-d37222d8fce3?auto=format&fit=crop&q=80&w=800' },
+  { id: 'c-mouno', name: 'Mouno General Hospital', district: 'Nilphamari', address: 'Nilphamari Sadar', doctors: ['mou1'], image: 'https://images.unsplash.com/photo-1586773860418-d37222d8fce3?auto=format&fit=crop&q=80&w=800' },
   { id: 'c-ibadat', name: 'Ibadat Hospital', district: 'Nilphamari', address: 'Old Station Road, Nilphamari', doctors: ['ib1','ib2','ib3','ib4','ib5','ib6','ib7'], image: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&q=80&w=800' },
-];
-
-export const DOCTORS: Doctor[] = [
-  // --- Green Sign Hospital Doctors (Complete 1-13) ---
-  { id: 'gs1', name: 'ডাঃ ওবায়দা নাসনীন (মুক্তা)', degree: 'এমবিবিএস, বিসিএস (স্বাস্থ্য), ডিজিও (ঢাকা মেডিকেল কলেজ)', specialty: 'স্ত্রী ও প্রসূতি রোগ বিশেষজ্ঞ এবং সার্জন', districts: ['Nilphamari'], clinics: ['c-greensign'], schedule: 'প্রতিদিন: বিকাল ৪টা - রাত ৯টা', availableToday: true, rating: 4.9, image: 'https://picsum.photos/200/200?doc=gs1' },
-  { id: 'gs2', name: 'ডাঃ শাহ মোঃ মোয়াজ্জেম হোসেন', degree: 'এমবিবিএস (ঢাকা), ডিসিএইচ (শিশু), বিসিএস (স্বাস্থ্য)', specialty: 'নবজাতক ও শিশু রোগ বিশেষজ্ঞ', districts: ['Nilphamari'], clinics: ['c-greensign'], schedule: 'প্রতিদিন: বিকাল ৩টা - রাত ১০টা', availableToday: true, rating: 4.9, image: 'https://picsum.photos/200/200?doc=gs2' },
-  { id: 'gs3', name: 'ডাঃ আব্দুর রহিম', degree: 'এমবিবিএস, বিসিএস (স্বাস্থ্য), ডি-অর্থো (বিএসএমএমইউ)', specialty: 'হাড়-জোড়া, বাত ব্যথা ও ট্রমা সার্জন', districts: ['Nilphamari'], clinics: ['c-greensign'], schedule: 'শনি-বৃহঃ: বিকাল ৩টা - রাত ৯টা', availableToday: true, rating: 4.8, image: 'https://picsum.photos/200/200?doc=gs3' },
-  { id: 'gs4', name: 'ডাঃ মোঃ আসাদুজ্জামান (আসাদ)', degree: 'এমবিবিএস, বিসিএস (স্বাস্থ্য), এফসিপিএস (মেডিসিন), এমডি (নিউরোলজি)', specialty: 'নিউরোমেডিসিন এবং মেডিসিন বিশেষজ্ঞ', districts: ['Nilphamari'], clinics: ['c-greensign'], schedule: 'প্রতি শুক্রবার: সকাল ১০টা - রাত ৮টা', availableToday: false, rating: 4.9, image: 'https://picsum.photos/200/200?doc=gs4' },
-  { id: 'gs5', name: 'ডাঃ মোঃ আসাদ আলম', degree: 'এমবিবিএস, বিসিএস (স্বাস্থ্য), সিসিডি (বারডেম), ডি-কার্ড (বিএসএমএমইউ)', specialty: 'হৃদরোগ, মেডিসিন, উচ্চ রক্তচাপ ও বাতজ্বর বিশেষজ্ঞ', districts: ['Nilphamari'], clinics: ['c-greensign'], schedule: 'প্রতিদিন: বিকাল ৩টা - রাত ৯টা', availableToday: true, rating: 4.7, image: 'https://picsum.photos/200/200?doc=gs5' },
-  { id: 'gs6', name: 'ডাঃ মোঃ মেহফুজ আলী', degree: 'এমবিবিএস (র.মে.কু), বিসিএস (স্বাস্থ্য), এফসিপিএস (মেডিসিন-এফপি), ডি-কার্ড', specialty: 'মেডিসিন, হৃদরোগ, ডায়াবেটিস, বাত-ব্যথা ও শ্বাসকষ্ট বিশেষজ্ঞ', districts: ['Nilphamari'], clinics: ['c-greensign'], schedule: 'শনি-বৃহঃ: বিকাল ৩টা - রাত ১০টা', availableToday: true, rating: 4.8, image: 'https://picsum.photos/200/200?doc=gs6' },
-  { id: 'gs7', name: 'ডাঃ রুমানা আফরোজ', degree: 'এমবিবিএস, পিজিটি, ইওসিটি, ডিএমইউ, সিসিডি, এমপিএইচ', specialty: 'প্রসূতি, বন্ধ্যাত্ব ও স্ত্রী রোগ বিশেষজ্ঞ', districts: ['Nilphamari'], clinics: ['c-greensign'], schedule: 'শনি-বৃহঃ: ৪টা-১০টা; শুক্র: ১০টা-৮টা', availableToday: true, rating: 4.9, image: 'https://picsum.photos/200/200?doc=gs7' },
-  { id: 'gs8', name: 'ডাঃ মোঃ রাশেদুল ইসলাম (রাশেদ)', degree: 'এমবিবিএস, ডিএলও (বিএসএমএমইউ)', specialty: 'নাক, কান, গলা, হেড নেক সার্জন', districts: ['Nilphamari'], clinics: ['c-greensign'], schedule: 'প্রতিদিন: সকাল ১০টা - রাত ৯টা', availableToday: true, rating: 4.8, image: 'https://picsum.photos/200/200?doc=gs8' },
-  { id: 'gs9', name: 'ডাঃ মোঃ সোহরাাব হোসেন', degree: 'এমবিবিএস, এফসিপিএস (সার্জারি)', specialty: 'জেনারেল ও ল্যাপারোস্কপিক সার্জন', districts: ['Nilphamari'], clinics: ['c-greensign'], schedule: 'শনি-বৃহঃ: বিকাল ৩টা - রাত ৯টা', availableToday: true, rating: 4.7, image: 'https://picsum.photos/200/200?doc=gs9' },
-  { id: 'gs10', name: 'ডাঃ খন্দকার মোঃ আরিফ হাসনাত', degree: 'এমবিবিএস, বিসিএস (স্বাস্থ্য), এমডি (অনকোলজি)', specialty: 'ক্যান্সার রোগ বিশেষজ্ঞ', districts: ['Nilphamari'], clinics: ['c-greensign'], schedule: 'প্রতি সোমবার: বিকাল ৩টা - রাত ৯টা', availableToday: false, rating: 4.9, image: 'https://picsum.photos/200/200?doc=gs10' },
-  { id: 'gs11', name: 'ডাঃ ফাহিম কিস্ওয়ার', degree: 'এমবিবিএস, ডিডিভি, সিসিডি, এফএলসিএস, এফসিপিএস', specialty: 'চর্ম, যৌন ও এলার্জি রোগ বিশেষজ্ঞ', districts: ['Nilphamari'], clinics: ['c-greensign'], schedule: 'প্রতি শুক্রবার: বিকাল ৩টা - রাত ৯টা', availableToday: false, rating: 4.8, image: 'https://picsum.photos/200/200?doc=gs11' },
-  { id: 'gs12', name: 'ডাঃ মোঃ ইমরান কবীর', degree: 'এমবিবিএস, বিসিএস (স্বাস্থ্য)', specialty: 'মেডিসিন, ডায়াবেটিস ও মা ও শিশু রোগ চিকিৎসক', districts: ['Nilphamari'], clinics: ['c-greensign'], schedule: 'প্রতিদিন: বিকাল ৩টা - রাত ৮টা', availableToday: true, rating: 4.7, image: 'https://picsum.photos/200/200?doc=gs12' },
-  { id: 'gs13', name: 'ডাঃ মোঃ নূরুজ্জামান মিয়া', degree: 'এমবিবিএস, বিসিএস (স্বাস্থ্য), এমএস (ইউরোলজি)', specialty: 'কিডনি ও ইউরোলজিস্ট সার্জন', districts: ['Nilphamari'], clinics: ['c-greensign'], schedule: 'প্রতি মঙ্গলবার: দুপুর ৩টা - রাত ৯টা', availableToday: false, rating: 4.8, image: 'https://picsum.photos/200/200?doc=gs13' },
-
-  // --- A.R. General Hospital Doctors (Complete 1-11) ---
-  { id: 'ar1', name: 'ডাঃ মোঃ মনিরুজ্জামান (মনি)', degree: 'MBBS, BCS, CCD (BIRDEM), MS (Gynae)', specialty: 'প্রসূতি ও স্ত্রীরোগ বিশেষজ্ঞ', districts: ['Nilphamari'], clinics: ['c-ar'], schedule: 'প্রতিদিন: বিকাল ৩টা - রাত ৯টা', availableToday: true, rating: 4.9, image: 'https://picsum.photos/200/200?doc=ar1' },
-  { id: 'ar2', name: 'ডাঃ মোঃ শাহ আলম', degree: 'MBBS, BCS, MD (Medicine)', specialty: 'মেডিসিন বিশেষজ্ঞ', districts: ['Nilphamari'], clinics: ['c-ar'], schedule: 'শনি-বৃহঃ: ৪টা - ৮টা', availableToday: true, rating: 4.7, image: 'https://picsum.photos/200/200?doc=ar2' },
-  { id: 'ar3', name: 'ডাঃ মোঃ আশেকুর রহমান', degree: 'MBBS, BCS, FCPS (Med), D-Card, MACP (USA)', specialty: 'মেডিসিন ও হৃদরোগ বিশেষজ্ঞ', districts: ['Nilphamari'], clinics: ['c-ar'], schedule: 'শুক্রবার: সকাল ১০টা - রাত ৮টা', availableToday: false, rating: 4.9, image: 'https://picsum.photos/200/200?doc=ar3' },
-  { id: 'ar4', name: 'ডাঃ মোসাঃ জিন্নাত রেজওয়ানা', degree: 'MBBS, DGO (Gynae)', specialty: 'গাইনী ও প্রসূতি রোগ বিশেষজ্ঞ', districts: ['Nilphamari'], clinics: ['c-ar'], schedule: 'প্রতিদিন: ৪টা - ৯টা', availableToday: true, rating: 4.8, image: 'https://picsum.photos/200/200?doc=ar4' },
-  { id: 'ar5', name: 'ডাঃ মোঃ মাহবুবুর রহমান', degree: 'MBBS, DCH (Child)', specialty: 'শিশু রোগ বিশেষজ্ঞ', districts: ['Nilphamari'], clinics: ['c-ar'], schedule: 'শনি-বৃহঃ: ৪টা - ৯টা', availableToday: true, rating: 4.8, image: 'https://picsum.photos/200/200?doc=ar5' },
-  { id: 'ar6', name: 'ডাঃ মোঃ জাহিদুল ইসলাম', degree: 'MBBS, MS (Surgery)', specialty: 'জেনারেল ও সার্জারি বিশেষজ্ঞ', districts: ['Nilphamari'], clinics: ['c-ar'], schedule: 'প্রতিদিন: ৫টা - ১০টা', availableToday: true, rating: 4.7, image: 'https://picsum.photos/200/200?doc=ar6' },
-  { id: 'ar7', name: 'ডাঃ মোঃ গোলাম সারওয়ার', degree: 'MBBS, D-Ortho', specialty: 'হাড়-জোড়া ও পঙ্গু বিশেষজ্ঞ', districts: ['Nilphamari'], clinics: ['c-ar'], schedule: 'শনি-বৃহঃ: ৪টা - ৮টা', availableToday: true, rating: 4.8, image: 'https://picsum.photos/200/200?doc=ar7' },
-  { id: 'ar8', name: 'ডাঃ মোঃ রেজাউল করিম', degree: 'MBBS, DLO (ENT)', specialty: 'নাক, কান ও গলা বিশেষজ্ঞ', districts: ['Nilphamari'], clinics: ['c-ar'], schedule: 'প্রতিদিন: ৪টা - ৯টা', availableToday: true, rating: 4.7, image: 'https://picsum.photos/200/200?doc=ar8' },
-  { id: 'ar9', name: 'ডাঃ মোঃ নূরুল ইসলাম', degree: 'MBBS, DDV (Skin)', specialty: 'চর্ম ও যৌন রোগ বিশেষজ্ঞ', districts: ['Nilphamari'], clinics: ['c-ar'], schedule: 'শনি-বৃহঃ: ৫টা - ৯টা', availableToday: true, rating: 4.8, image: 'https://picsum.photos/200/200?doc=ar9' },
-  { id: 'ar10', name: 'ডাঃ মোঃ আবু সাঈদ', degree: 'BDS, PGT (Dental)', specialty: 'দন্ত রোগ বিশেষজ্ঞ', districts: ['Nilphamari'], clinics: ['c-ar'], schedule: 'প্রতিদিন: ৯টা - ৮টা', availableToday: true, rating: 4.6, image: 'https://picsum.photos/200/200?doc=ar10' },
-  { id: 'ar11', name: 'ডাঃ মোঃ এনামুল হক', degree: 'MBBS, BCS, MD (Med)', specialty: 'মেডিসিন বিশেষজ্ঞ', districts: ['Nilphamari'], clinics: ['c-ar'], schedule: 'প্রতিদিন: ৪টা - ৮টা', availableToday: true, rating: 4.8, image: 'https://picsum.photos/200/200?doc=ar11' },
-
-  // --- Madina Diagnostic Clinic Doctors (Complete 1-11) ---
-  { id: 'md1', name: 'ডাঃ মোঃ আব্দুল কাদের জিলানী', degree: 'MBBS, BCS, FCPS (Hematology)', specialty: 'হেমাটোলজি (রক্তরোগ) বিশেষজ্ঞ', districts: ['Nilphamari'], clinics: ['c-madina'], schedule: 'Fri: 9 AM - 3 PM', availableToday: false, rating: 4.9, image: 'https://picsum.photos/200/200?doc=md1' },
-  { id: 'md2', name: 'ডাঃ মোঃ কায়কোবাদ হোসেন', degree: 'MBBS, BCS, FCPS, MD (Neurology)', specialty: 'মেডিসিন, নিউরোলজি ও গ্যাস্ট্রোএন্টারোলজি', districts: ['Nilphamari'], clinics: ['c-madina'], schedule: 'Mon-Wed: 3 PM - 8 PM', availableToday: true, rating: 4.9, image: 'https://picsum.photos/200/200?doc=md2' },
-  { id: 'md3', name: 'ডাঃ মোস্তাফিজুর রহমান (সাকিব)', degree: 'MBBS, BCS, MD (Nephrology)', specialty: 'কিডনি রোগ ও মেডিসিন বিশেষজ্ঞ', districts: ['Nilphamari'], clinics: ['c-madina'], schedule: 'Fri: 4 PM-10 PM, Wed: 9 AM-8 PM', availableToday: true, rating: 4.8, image: 'https://picsum.photos/200/200?doc=md3' },
-  { id: 'md4', name: 'ডাঃ আরিফুজ্জামান তুহিন', degree: 'MBBS, BCS, PGT, MD (Cardiology)', specialty: 'হৃদরোগ ও মেডিসিন বিশেষজ্ঞ', districts: ['Nilphamari'], clinics: ['c-madina'], schedule: 'Fri: 9 AM - 2 PM', availableToday: false, rating: 4.8, image: 'https://picsum.photos/200/200?doc=md4' },
-  { id: 'md5', name: 'ডাঃ মোঃ আব্দুল কুদ্দুস', degree: 'MBBS, BCS, CCD, MCPS (Skin & VD)', specialty: 'চর্ম, যৌন ও এলার্জি রোগ বিশেষজ্ঞ', districts: ['Nilphamari'], clinics: ['c-madina'], schedule: 'Sun: 3 PM - 8 PM', availableToday: false, rating: 4.7, image: 'https://picsum.photos/200/200?doc=md5' },
-  { id: 'md6', name: 'ডাঃ ধীমান প্রামাণিক', degree: 'MBBS (DMC), BCS, FCPS (ENT)', specialty: 'নাক, কান, গলা রোগ বিশেষজ্ঞ', districts: ['Nilphamari'], clinics: ['c-madina'], schedule: 'Tue: 3:30 PM - 8 PM', availableToday: false, rating: 4.9, image: 'https://picsum.photos/200/200?doc=md6' },
-  { id: 'md7', name: 'ডাঃ মোঃ মাসুদ পারভেজ', degree: 'MBBS (SSMC), BCS, MD (Medicine)', specialty: 'মেডিসিন, নিউরো-মেডিসিন বিশেষজ্ঞ', districts: ['Nilphamari'], clinics: ['c-madina'], schedule: 'Sat-Thu: 4 PM - 8 PM', availableToday: true, rating: 4.8, image: 'https://picsum.photos/200/200?doc=md7' },
-  { id: 'md8', name: 'ডাঃ মোঃ আসাদুজ্জামান (সুমন)', degree: 'MBBS, BCS, D-Ortho', specialty: 'হাড়-জোড়া, বাত-ব্যথা ও ট্রমা সার্জন', districts: ['Nilphamari'], clinics: ['c-madina'], schedule: 'Mon: 3 PM - 8 PM', availableToday: true, rating: 4.7, image: 'https://picsum.photos/200/200?doc=md8' },
-  { id: 'md9', name: 'ডাঃ মোঃ মনিরুজ্জামান (মনি)', degree: 'MBBS, BCS, CCD, MS (Gynae)', specialty: 'প্রসূতি, বন্ধ্যাত্ব ও স্ত্রীরোগ বিশেষজ্ঞ', districts: ['Nilphamari'], clinics: ['c-madina'], schedule: 'Daily', availableToday: true, rating: 4.9, image: 'https://picsum.photos/200/200?doc=md9' },
-  { id: 'md10', name: 'ডাঃ ইসরাত আজিজ (সুমি)', degree: 'MBBS, MS (Gynae & Obs)', specialty: 'গাইনী, প্রসূতি ও বন্ধ্যাত্ব বিশেষজ্ঞ', districts: ['Nilphamari'], clinics: ['c-madina'], schedule: 'Fri: 9 AM - 8 PM', availableToday: false, rating: 4.8, image: 'https://picsum.photos/200/200?doc=md10' },
-  { id: 'md11', name: 'ডাঃ তাবাসসুম মাহজাবিন', degree: 'MBBS, BCS, FCPS (Pediatrics)', specialty: 'নবজাতক, শিশু ও কিশোর রোগ বিশেষজ্ঞ', districts: ['Nilphamari'], clinics: ['c-madina'], schedule: 'Daily: 4 PM - 8 PM', availableToday: true, rating: 4.8, image: 'https://picsum.photos/200/200?doc=md11' },
-
-  // --- Mouno General Hospital Doctor ---
-  { id: 'mou1', name: 'ডাঃ আব্দুল্লাহ আল মামুন', degree: 'MBBS, MD (Med)', specialty: 'মেডিসিন বিশেষজ্ঞ', districts: ['Nilphamari'], clinics: ['c-mouno'], schedule: 'শনি-বৃহঃ: ৫টা - ৯টা', availableToday: true, rating: 4.7, image: 'https://picsum.photos/200/200?doc=mou1' },
-
-  // --- Ibadat Hospital Doctors (Complete 1-7) ---
-  { id: 'ib1', name: 'ডাঃ মোঃ মোজাম্মেল হক', degree: 'MBBS, BCS, MD (Med)', specialty: 'মেডিসিন বিশেষজ্ঞ', districts: ['Nilphamari'], clinics: ['c-ibadat'], schedule: 'প্রতিদিন: ৪টা - ৯টা', availableToday: true, rating: 4.8, image: 'https://picsum.photos/200/200?doc=ib1' },
-  { id: 'ib2', name: 'ডাঃ মোসাঃ শামীমা আক্তার', degree: 'MBBS, MS (Gynae)', specialty: 'স্ত্রী ও প্রসূতি বিশেষজ্ঞ', districts: ['Nilphamari'], clinics: ['c-ibadat'], schedule: 'প্রতিদিন: ৪টা - ১০টা', availableToday: true, rating: 4.9, image: 'https://picsum.photos/200/200?doc=ib2' },
-  { id: 'ib3', name: 'ডাঃ মোঃ আতিকুর রহমান', degree: 'MBBS, DCH (Child)', specialty: 'শিশু রোগ বিশেষজ্ঞ', districts: ['Nilphamari'], clinics: ['c-ibadat'], schedule: 'শনি-বৃহঃ: ৪টা - ৯টা', availableToday: true, rating: 4.7, image: 'https://picsum.photos/200/200?doc=ib3' },
-  { id: 'ib4', name: 'ডাঃ মোঃ রবিউল ইসলাম', degree: 'MBBS, D-Ortho', specialty: 'হাড়-জোড়া বিশেষজ্ঞ', districts: ['Nilphamari'], clinics: ['c-ibadat'], schedule: 'প্রতিদিন: ৫টা - ৯টা', availableToday: true, rating: 4.8, image: 'https://picsum.photos/200/200?doc=ib4' },
-  { id: 'ib5', name: 'ডাঃ মোঃ শফিউল আলম', degree: 'MBBS, BCS, FCPS', specialty: 'সার্জারি বিশেষজ্ঞ', districts: ['Nilphamari'], clinics: ['c-ibadat'], schedule: 'শনি-বৃহঃ: ৪টা - ৮টা', availableToday: true, rating: 4.9, image: 'https://picsum.photos/200/200?doc=ib5' },
-  { id: 'ib6', name: 'ডাঃ মোঃ মাসুদুর রহমান', degree: 'MBBS, DLO', specialty: 'নাক, কান ও গলা বিশেষজ্ঞ', districts: ['Nilphamari'], clinics: ['c-ibadat'], schedule: 'প্রতিদিন: ৪টা - ৯টা', availableToday: true, rating: 4.7, image: 'https://picsum.photos/200/200?doc=ib6' },
-  { id: 'ib7', name: 'ডাঃ মোঃ আল-আমিন', degree: 'MBBS, BCS, MD (Cardiology)', specialty: 'হৃদরোগ বিশেষজ্ঞ', districts: ['Nilphamari'], clinics: ['c-ibadat'], schedule: 'শুক্রবার: সকাল ৯টা - বিকাল ৫টা', availableToday: false, rating: 4.8, image: 'https://picsum.photos/200/200?doc=ib7' },
 ];
