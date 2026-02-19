@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { UserRole, Doctor, Clinic, Medicine, Order, Profile, Prescription } from './types';
-import { DOCTORS, CLINICS, MEDICINES, EMERGENCY_SERVICES, DISTRICTS } from './constants';
+import { DOCTORS, CLINICS, MEDICINES, EMERGENCY_SERVICES, DISTRICTS, LAB_TESTS } from './constants';
 import { gemini } from './services/geminiService';
 import { supabase } from './services/supabaseClient';
 
@@ -86,11 +86,11 @@ const Input: React.FC<{
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('home');
-  const [homeSubCategory, setHomeSubCategory] = useState<'doctors' | 'hospitals' | 'emergency'>('doctors');
+  const [homeSubCategory, setHomeSubCategory] = useState<'doctors' | 'hospitals' | 'labtests' | 'emergency'>('doctors');
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [tickerMessage, setTickerMessage] = useState('জেবি হেলথকেয়ারে আপনাকে স্বাগতম!');
+  const [tickerMessage, setTickerMessage] = useState('জেবি হেলথকেয়ারে আপনাকে স্বাগত! যেকোনো প্রয়োজনে কল করুন: ০১৫১৮৩৯৫৭৭২');
 
   // Search States
   const [searchTerm, setSearchTerm] = useState('');
@@ -195,7 +195,6 @@ export default function App() {
         setProfile(prof);
         setShowAuthModal(false);
       } else {
-        // Register Logic
         const fullName = formData.get('fullName') as string;
         const phone = formData.get('phone') as string;
         const { data, error } = await supabase.auth.signUp({ email: emailVal, password: passVal });
@@ -232,6 +231,10 @@ export default function App() {
     return list.filter(d => d.name.toLowerCase().includes(searchTerm.toLowerCase()) || d.specialty.toLowerCase().includes(searchTerm.toLowerCase()));
   }, [searchTerm, selectedHospitalId]);
 
+  const filteredLabTests = useMemo(() => {
+    return LAB_TESTS.filter(t => t.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  }, [searchTerm]);
+
   const masterLogFiltered = useMemo(() => {
     return allPrescriptions.filter(p => 
       p.patient_name.toLowerCase().includes(adminSearchTerm.toLowerCase()) ||
@@ -249,12 +252,12 @@ export default function App() {
     alert('বার আপডেট হয়েছে!');
   };
 
-  if (isLoading) return <div className="h-screen flex items-center justify-center font-black text-blue-600">JB HEALTHCARE...</div>;
+  if (isLoading) return <div className="h-screen flex items-center justify-center font-black text-blue-600 animate-pulse">JB HEALTHCARE...</div>;
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col max-w-lg mx-auto relative overflow-hidden shadow-2xl">
       
-      {/* Dynamic Ticker */}
+      {/* Ticker */}
       <div className="bg-red-600 text-white py-2 overflow-hidden whitespace-nowrap z-50 shadow-md">
         <div className="animate-marquee inline-block pl-[100%] font-black text-[10px] uppercase tracking-wider">
           {tickerMessage} • ইমারজেন্সি হেল্পলাইন: ০১৫১৮৩৯৫৭৭২ • 
@@ -280,30 +283,34 @@ export default function App() {
         
         {activeTab === 'home' && (
           <div className="space-y-8 animate-in fade-in">
-            {/* Quick Filter Menu */}
-            <div className="grid grid-cols-3 gap-3">
+            {/* Filter Menu */}
+            <div className="grid grid-cols-4 gap-2">
                {[
                  { id: 'doctors', icon: '👨‍⚕️', label: 'ডক্টর' },
                  { id: 'hospitals', icon: '🏥', label: 'হাসপাতাল' },
+                 { id: 'labtests', icon: '🔬', label: 'ল্যাব টেস্ট' },
                  { id: 'emergency', icon: '🆘', label: 'সেবা' }
                ].map(cat => (
                  <button 
                    key={cat.id} 
-                   onClick={() => { setHomeSubCategory(cat.id as any); setSelectedHospitalId(null); }}
-                   className={`flex flex-col items-center gap-1.5 p-4 rounded-3xl transition-all ${homeSubCategory === cat.id ? 'bg-blue-600 text-white shadow-xl scale-105' : 'bg-white text-slate-400 border border-slate-50'}`}
+                   onClick={() => { setHomeSubCategory(cat.id as any); setSelectedHospitalId(null); setSearchTerm(''); }}
+                   className={`flex flex-col items-center gap-1.5 p-3 rounded-2xl transition-all ${homeSubCategory === cat.id ? 'bg-blue-600 text-white shadow-lg scale-105' : 'bg-white text-slate-400 border border-slate-50'}`}
                  >
-                   <span className="text-2xl">{cat.icon}</span>
-                   <span className="text-[9px] font-black uppercase tracking-wider">{cat.label}</span>
+                   <span className="text-xl">{cat.icon}</span>
+                   <span className="text-[8px] font-black uppercase tracking-wider text-center">{cat.label}</span>
                  </button>
                ))}
             </div>
 
             <div className="space-y-6">
                <div className="flex justify-between items-center bg-slate-100/50 p-2 rounded-2xl">
-                  <h2 className="text-sm font-black text-slate-800 uppercase ml-2 tracking-wide">
-                    {homeSubCategory === 'doctors' ? 'বিশেষজ্ঞ ডক্টর' : homeSubCategory === 'hospitals' ? 'হাসপাতাল লিস্ট' : 'জরুরি সেবা'}
+                  <h2 className="text-[11px] font-black text-slate-800 uppercase ml-2 tracking-wide">
+                    {homeSubCategory === 'doctors' ? 'বিশেষজ্ঞ ডক্টর' : homeSubCategory === 'hospitals' ? 'হাসপাতাল লিস্ট' : homeSubCategory === 'labtests' ? 'ল্যাব টেস্ট (Lab Tests)' : 'জরুরি সেবা'}
                   </h2>
-                  <input type="text" placeholder="খুঁজুন..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="bg-white border-none rounded-xl py-2 px-3 text-[10px] font-bold outline-none w-32 shadow-sm" />
+                  <div className="relative">
+                    <input type="text" placeholder="খুঁজুন..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="bg-white border-none rounded-xl py-2 px-3 text-[10px] font-bold outline-none w-36 shadow-sm" />
+                    <span className="absolute right-2 top-2 text-slate-300 text-[10px]">🔍</span>
+                  </div>
                </div>
 
                <div className="space-y-4 pb-20">
@@ -332,6 +339,28 @@ export default function App() {
                     </Card>
                   ))}
 
+                  {homeSubCategory === 'labtests' && (
+                    <div className="grid grid-cols-1 gap-3">
+                      {filteredLabTests.length > 0 ? filteredLabTests.map(test => (
+                        <Card key={test.id} className="flex justify-between items-center border-l-4 border-l-indigo-500 hover:bg-indigo-50 transition-colors" onClick={() => setShowPayment({show: true, amount: test.price, item: `Lab Test: ${test.name}`, shipping: 0})}>
+                           <div>
+                              <h4 className="text-[12px] font-black text-slate-800 uppercase tracking-tight">{test.name}</h4>
+                              <p className="text-[9px] text-slate-400 font-bold uppercase">Health Diagnostic</p>
+                           </div>
+                           <div className="text-right">
+                              <p className="text-indigo-600 font-black text-sm">৳{test.price}</p>
+                              <button className="text-[8px] bg-indigo-600 text-white px-3 py-1 rounded-lg font-black mt-1">অর্ডার</button>
+                           </div>
+                        </Card>
+                      )) : (
+                        <div className="text-center py-20 bg-white rounded-3xl border-2 border-dashed border-slate-100">
+                          <p className="text-2xl mb-2">🔎</p>
+                          <p className="text-[10px] font-black text-slate-300 uppercase">কোনো টেস্ট পাওয়া যায়নি</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   {homeSubCategory === 'emergency' && EMERGENCY_SERVICES.map(s => (
                     <Card key={s.id} className="flex justify-between items-center border-l-4 border-l-red-500 hover:bg-red-50 transition-colors" onClick={() => setShowPayment({show: true, amount: s.price, item: s.name, shipping: 100})}>
                        <div className="flex gap-4 items-center">
@@ -352,7 +381,7 @@ export default function App() {
         {activeTab === 'profile' && (
           <div className="space-y-6 animate-in slide-in-from-bottom-5">
             <Card className="flex items-center gap-5 py-8 bg-gradient-to-br from-blue-50 to-indigo-50 border-none shadow-inner">
-               <div className="w-16 h-16 bg-blue-600 rounded-[22px] flex items-center justify-center text-white text-3xl font-black shadow-xl rotate-3">
+               <div className="w-16 h-16 bg-blue-600 rounded-[22px] flex items-center justify-center text-white text-3xl font-black shadow-xl">
                  {profile?.full_name?.[0] || '👤'}
                </div>
                <div>
@@ -365,7 +394,7 @@ export default function App() {
             </Card>
 
             <div className="flex bg-slate-100 p-1.5 rounded-[22px]">
-              <button onClick={() => setHistoryTab('info')} className={`flex-1 py-2.5 rounded-2xl text-[10px] font-black uppercase transition-all ${historyTab === 'info' ? 'bg-white shadow-sm text-blue-600' : 'text-slate-400'}`}>আমার তথ্য</button>
+              <button onClick={() => setHistoryTab('info')} className={`flex-1 py-2.5 rounded-2xl text-[10px] font-black uppercase transition-all ${historyTab === 'info' ? 'bg-white shadow-sm text-blue-600' : 'text-slate-400'}`}>তথ্য</button>
               <button onClick={() => setHistoryTab('history')} className={`flex-1 py-2.5 rounded-2xl text-[10px] font-black uppercase transition-all ${historyTab === 'history' ? 'bg-white shadow-sm text-blue-600' : 'text-slate-400'}`}>ইতিহাস</button>
               {profile?.role === UserRole.ADMIN && (
                 <button onClick={() => setHistoryTab('admin')} className={`flex-1 py-2.5 rounded-2xl text-[10px] font-black uppercase transition-all ${historyTab === 'admin' ? 'bg-white shadow-sm text-red-600' : 'text-slate-400'}`}>ম্যানেজমেন্ট</button>
@@ -374,64 +403,40 @@ export default function App() {
 
             {historyTab === 'admin' && profile?.role === UserRole.ADMIN && (
               <div className="space-y-8 animate-in fade-in pb-24">
-                {/* Visual Dashboard Stats */}
                 <div className="grid grid-cols-2 gap-4">
-                   <div className="bg-blue-600 p-5 rounded-[32px] text-white shadow-xl shadow-blue-100">
+                   <div className="bg-blue-600 p-5 rounded-[32px] text-white shadow-xl">
                       <p className="text-2xl font-black">{allProfiles.filter(p => p.role === UserRole.PATIENT).length}</p>
-                      <p className="text-[9px] font-black uppercase tracking-widest opacity-60">মোট পেশেন্ট</p>
+                      <p className="text-[9px] font-black uppercase opacity-60">মোট পেশেন্ট</p>
                    </div>
-                   <div className="bg-indigo-600 p-5 rounded-[32px] text-white shadow-xl shadow-indigo-100">
+                   <div className="bg-indigo-600 p-5 rounded-[32px] text-white shadow-xl">
                       <p className="text-2xl font-black">{allProfiles.filter(p => p.role === UserRole.DOCTOR).length}</p>
-                      <p className="text-[9px] font-black uppercase tracking-widest opacity-60">মোট ডক্টর</p>
+                      <p className="text-[9px] font-black uppercase opacity-60">মোট ডক্টর</p>
                    </div>
                 </div>
 
-                {/* Sub-tabs for Management */}
                 <div className="flex border-b overflow-x-auto no-scrollbar pt-2 gap-6">
-                   <button onClick={() => setAdminSubTab('log')} className={`pb-3 text-[11px] font-black uppercase whitespace-nowrap tracking-wider transition-colors ${adminSubTab === 'log' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400'}`}>কনসাল্টেশন লগ</button>
-                   <button onClick={() => setAdminSubTab('users')} className={`pb-3 text-[11px] font-black uppercase whitespace-nowrap tracking-wider transition-colors ${adminSubTab === 'users' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400'}`}>ইউজার লিস্ট</button>
-                   <button onClick={() => setAdminSubTab('settings')} className={`pb-3 text-[11px] font-black uppercase whitespace-nowrap tracking-wider transition-colors ${adminSubTab === 'settings' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400'}`}>সেটিংস</button>
+                   <button onClick={() => setAdminSubTab('log')} className={`pb-3 text-[11px] font-black uppercase whitespace-nowrap tracking-wider ${adminSubTab === 'log' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400'}`}>কনসাল্টেশন লগ</button>
+                   <button onClick={() => setAdminSubTab('users')} className={`pb-3 text-[11px] font-black uppercase whitespace-nowrap tracking-wider ${adminSubTab === 'users' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400'}`}>ইউজার লিস্ট</button>
+                   <button onClick={() => setAdminSubTab('settings')} className={`pb-3 text-[11px] font-black uppercase whitespace-nowrap tracking-wider ${adminSubTab === 'settings' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400'}`}>সেটিংস</button>
                 </div>
 
                 {adminSubTab === 'log' && (
                   <div className="space-y-5">
-                     <div className="relative">
-                        <input 
-                          type="text" 
-                          placeholder="রোগী বা ডাক্তারের নাম লিখে খুঁজুন..." 
-                          className="w-full bg-white border-2 border-slate-50 shadow-sm rounded-2xl py-3.5 px-5 text-xs font-bold outline-none focus:border-blue-400 transition-all" 
-                          value={adminSearchTerm} 
-                          onChange={(e) => setAdminSearchTerm(e.target.value)} 
-                        />
-                        <span className="absolute right-4 top-3.5 text-slate-300">🔍</span>
-                     </div>
-                     
+                     <input type="text" placeholder="রোগী বা ডাক্তারের নাম লিখুন..." className="w-full bg-white border shadow-sm rounded-2xl py-3 px-5 text-xs font-bold outline-none" value={adminSearchTerm} onChange={(e) => setAdminSearchTerm(e.target.value)} />
                      <div className="space-y-4">
-                        {masterLogFiltered.length > 0 ? masterLogFiltered.map((p, idx) => (
-                          <Card key={p.id} className="border-l-4 border-l-blue-600 group hover:shadow-md transition-shadow">
-                             <div className="flex justify-between items-start">
-                                <div>
-                                   <div className="flex items-center gap-2 mb-1">
-                                      <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-lg">VISIT #{allPrescriptions.length - idx}</span>
-                                      <p className="text-[9px] font-black text-slate-400 uppercase">{new Date(p.created_at).toLocaleString('bn-BD')}</p>
-                                   </div>
-                                   <h4 className="font-black text-[15px] text-slate-800">পেশেন্ট: {p.patient_name}</h4>
-                                   <p className="text-[11px] text-slate-500 font-bold mt-1">ডক্টর: <span className="text-blue-600">{p.doctor_name}</span> ({p.doctor_specialty})</p>
-                                </div>
+                        {masterLogFiltered.map((p, idx) => (
+                          <Card key={p.id} className="border-l-4 border-l-blue-600">
+                             <div className="flex justify-between items-start mb-2">
+                                <p className="text-[9px] font-black text-slate-400 uppercase">{new Date(p.created_at).toLocaleString('bn-BD')}</p>
+                                <span className="text-[8px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-lg">#VISIT {allPrescriptions.length - idx}</span>
                              </div>
-                             <div className="mt-3 pt-3 border-t border-slate-50">
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">প্রেসক্রিপশন / ওষুধসমূহ:</p>
-                                <div className="bg-slate-50 p-3 rounded-xl text-[11px] text-slate-700 font-medium leading-relaxed italic">
-                                   {p.medicines}
-                                </div>
+                             <h4 className="font-black text-sm text-slate-800">পেশেন্ট: {p.patient_name}</h4>
+                             <p className="text-[10px] text-slate-500 font-bold mt-1">ডক্টর: <span className="text-blue-600">{p.doctor_name}</span></p>
+                             <div className="mt-2 bg-slate-50 p-3 rounded-xl text-[10px] text-slate-700 italic border border-slate-100">
+                                {p.medicines}
                              </div>
                           </Card>
-                        )) : (
-                          <div className="text-center py-20 bg-white rounded-[32px] border-2 border-dashed border-slate-100">
-                             <p className="text-2xl mb-2">📋</p>
-                             <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">কোনো রেকর্ড পাওয়া যায়নি</p>
-                          </div>
-                        )}
+                        ))}
                      </div>
                   </div>
                 )}
@@ -439,47 +444,25 @@ export default function App() {
                 {adminSubTab === 'users' && (
                    <div className="space-y-3">
                       {allProfiles.map(p => (
-                        <Card key={p.id} className="flex justify-between items-center py-4 px-5 hover:bg-slate-50" onClick={() => {
-                          const userPrescs = allPrescriptions.filter(pr => pr.patient_id === p.id);
-                          setSelectedUserRecords({ p, recs: userPrescs });
-                        }}>
+                        <Card key={p.id} className="flex justify-between items-center py-4 hover:bg-slate-50" onClick={() => setSelectedUserRecords({ p, recs: allPrescriptions.filter(pr => pr.patient_id === p.id) })}>
                            <div className="flex items-center gap-4">
-                              <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center font-black text-slate-400 text-sm">
-                                {p.full_name[0]}
-                              </div>
+                              <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center font-black text-slate-400 text-sm">{p.full_name[0]}</div>
                               <div>
                                  <p className="text-xs font-black text-slate-800">{p.full_name}</p>
-                                 <p className="text-[9px] text-slate-400 font-bold uppercase">{p.role} • {p.phone || 'No Phone'}</p>
+                                 <p className="text-[9px] text-slate-400 font-bold uppercase">{p.role} • {p.phone}</p>
                               </div>
                            </div>
-                           <div className="flex items-center gap-2">
-                              {p.status === 'pending' ? (
-                                <div className="flex gap-1">
-                                  <button onClick={(e) => { e.stopPropagation(); updateUserStatus(p.id, 'active'); }} className="bg-emerald-500 text-white text-[8px] font-black px-2 py-1 rounded-lg">এপ্রুভ</button>
-                                  <button onClick={(e) => { e.stopPropagation(); updateUserStatus(p.id, 'suspended'); }} className="bg-rose-500 text-white text-[8px] font-black px-2 py-1 rounded-lg">রিজেক্ট</button>
-                                </div>
-                              ) : (
-                                <Badge status={p.status} />
-                              )}
-                              <span className="text-slate-300 text-xs">›</span>
-                           </div>
+                           <Badge status={p.status} />
                         </Card>
                       ))}
                    </div>
                 )}
 
                 {adminSubTab === 'settings' && (
-                  <div className="space-y-6">
-                     <div className="space-y-3">
-                        <h3 className="text-[11px] font-black uppercase text-red-600 tracking-widest flex items-center gap-2">📢 অন-গোয়িং নোটিফিকেশন বার</h3>
-                        <textarea 
-                          value={tickerMessage} 
-                          onChange={(e) => setTickerMessage(e.target.value)} 
-                          placeholder="এখানে আপনার ইমারজেন্সি তথ্য লিখুন..."
-                          className="w-full bg-white border-2 border-slate-50 shadow-inner p-5 rounded-3xl text-sm font-medium h-32 outline-none focus:border-red-400 transition-all" 
-                        />
-                        <Button variant="danger" className="w-full py-4 shadow-red-100" onClick={updateTicker}>বার আপডেট করুন</Button>
-                     </div>
+                  <div className="space-y-4">
+                     <h3 className="text-[10px] font-black uppercase text-red-600 tracking-widest">📢 নোটিফিকেশন বার</h3>
+                     <textarea value={tickerMessage} onChange={(e) => setTickerMessage(e.target.value)} className="w-full bg-white border-2 p-4 rounded-3xl text-sm h-32 outline-none focus:border-red-400" />
+                     <Button variant="danger" className="w-full py-4" onClick={updateTicker}>আপডেট করুন</Button>
                   </div>
                 )}
               </div>
@@ -488,9 +471,9 @@ export default function App() {
             {historyTab === 'history' && (
               <div className="space-y-4 pb-24">
                  {allPrescriptions.length > 0 ? allPrescriptions.map(p => (
-                   <Card key={p.id} className="border-l-4 border-l-blue-600 hover:shadow-md transition-shadow">
+                   <Card key={p.id} className="border-l-4 border-l-blue-600">
                      <div className="flex justify-between items-start mb-2">
-                       <p className="text-xs font-black text-slate-800 tracking-tight">{p.doctor_name}</p>
+                       <p className="text-xs font-black text-slate-800">{p.doctor_name}</p>
                        <p className="text-[9px] text-slate-400 font-bold uppercase">{new Date(p.created_at).toLocaleDateString()}</p>
                      </div>
                      <div className="bg-blue-50/50 p-4 rounded-2xl border border-blue-50">
@@ -498,26 +481,13 @@ export default function App() {
                      </div>
                    </Card>
                  )) : (
-                   <div className="text-center py-24 opacity-20 font-black uppercase text-xs flex flex-col items-center gap-3">
-                     <span className="text-5xl">📑</span>
-                     <span>কোনো ইতিহাস নেই</span>
-                   </div>
+                   <div className="text-center py-24 opacity-20 font-black uppercase text-xs">কোনো ইতিহাস নেই</div>
                  )}
               </div>
             )}
 
             {historyTab === 'info' && (
                <div className="space-y-4 pt-4">
-                  <div className="bg-white rounded-3xl p-6 border border-slate-100 space-y-4">
-                     <div className="flex justify-between items-center pb-4 border-b">
-                        <span className="text-[10px] font-black text-slate-400 uppercase">ফোন নম্বর</span>
-                        <span className="text-sm font-black text-slate-800">{profile?.phone || 'যোগ করা হয়নি'}</span>
-                     </div>
-                     <div className="flex justify-between items-center">
-                        <span className="text-[10px] font-black text-slate-400 uppercase">স্ট্যাটাস</span>
-                        <Badge status={profile?.status || 'active'} />
-                     </div>
-                  </div>
                   <Button onClick={() => window.open('https://wa.me/8801518395772', '_blank')} variant="success" className="w-full py-4 rounded-[22px]">লাইভ সাপোর্ট (হোয়াটসঅ্যাপ)</Button>
                   <Button onClick={logout} variant="secondary" className="w-full py-4 rounded-[22px] text-red-500">লগ আউট</Button>
                </div>
@@ -526,11 +496,11 @@ export default function App() {
         )}
 
         {activeTab === 'orders' && (
-          <div className="space-y-6 animate-in slide-in-from-right-5">
+          <div className="space-y-6">
             <h2 className="text-xl font-black text-slate-800 tracking-tight">অর্ডার হিস্ট্রি</h2>
             <div className="space-y-4 pb-24">
               {allOrders.map(order => (
-                <Card key={order.id} className="border-l-4 border-l-amber-500 hover:shadow-sm">
+                <Card key={order.id} className="border-l-4 border-l-amber-500">
                   <div className="flex justify-between items-start mb-3">
                     <p className="text-xs font-black text-slate-800">{order.item_name}</p>
                     <Badge status={order.status} />
@@ -541,19 +511,14 @@ export default function App() {
                   </div>
                 </Card>
               ))}
-              {allOrders.length === 0 && (
-                <div className="text-center py-24 opacity-20 font-black text-xs uppercase flex flex-col items-center gap-3">
-                  <span className="text-5xl">📦</span>
-                  <span>কোনো অর্ডার নেই</span>
-                </div>
-              )}
+              {allOrders.length === 0 && <div className="text-center py-24 opacity-20 font-black text-xs uppercase">কোনো অর্ডার নেই</div>}
             </div>
           </div>
         )}
       </main>
 
-      {/* Primary Navigation */}
-      <nav className="fixed bottom-6 left-6 right-6 z-50 bg-slate-900/95 backdrop-blur-2xl flex justify-around items-center py-5 px-3 rounded-[36px] shadow-2xl border border-white/10">
+      {/* Nav */}
+      <nav className="fixed bottom-6 left-6 right-6 z-50 bg-slate-900/95 backdrop-blur-2xl flex justify-around items-center py-5 rounded-[36px] shadow-2xl border border-white/10">
         <button onClick={() => { setActiveTab('home'); setSelectedHospitalId(null); }} className={`flex flex-col items-center gap-1.5 transition-all ${activeTab === 'home' ? 'text-cyan-400 scale-125' : 'text-slate-500 opacity-60'}`}>
           <span className="text-2xl">🏠</span>
           <span className="text-[8px] font-black uppercase tracking-widest">হোম</span>
@@ -568,34 +533,31 @@ export default function App() {
         </button>
       </nav>
 
-      {/* User Record Detail Modal (For Moderator) */}
+      {/* Moderator User Detail View */}
       {selectedUserRecords && (
         <div className="fixed inset-0 z-[120] bg-black/90 backdrop-blur-xl flex items-end justify-center">
-           <div className="bg-white w-full max-w-lg rounded-t-[48px] p-8 pb-12 space-y-6 max-h-[92vh] overflow-y-auto animate-in slide-in-from-bottom-20 duration-500">
+           <div className="bg-white w-full max-w-lg rounded-t-[48px] p-8 space-y-6 max-h-[92vh] overflow-y-auto animate-in slide-in-from-bottom-20 duration-500">
               <div className="flex justify-between items-center border-b pb-4">
                  <div>
                     <h2 className="text-xl font-black text-slate-800">{selectedUserRecords.p.full_name}</h2>
                     <p className="text-[10px] text-slate-400 font-bold uppercase">{selectedUserRecords.p.role} • {selectedUserRecords.p.phone}</p>
                  </div>
-                 <button onClick={() => setSelectedUserRecords(null)} className="text-slate-300 hover:text-slate-800 transition-colors text-2xl font-bold">✕</button>
+                 <button onClick={() => setSelectedUserRecords(null)} className="text-slate-300 text-2xl font-bold">✕</button>
               </div>
-              
               <div className="space-y-4">
-                 <h3 className="text-xs font-black uppercase tracking-widest text-blue-600">চিকিৎসা ও প্রেসক্রিপশন ইতিহাস</h3>
+                 <h3 className="text-xs font-black uppercase tracking-widest text-blue-600">চিকিৎসা ইতিহাস</h3>
                  {selectedUserRecords.recs.length > 0 ? selectedUserRecords.recs.map(p => (
                    <Card key={p.id} className="border-l-4 border-l-blue-600 bg-slate-50/50">
-                      <div className="flex justify-between items-start">
+                      <div className="flex justify-between items-start mb-1">
                          <p className="text-[11px] font-black text-slate-800">{p.doctor_name}</p>
                          <p className="text-[9px] text-slate-400 font-bold">{new Date(p.created_at).toLocaleDateString()}</p>
                       </div>
-                      <p className="text-[10px] text-blue-600 font-bold uppercase mt-1">{p.doctor_specialty}</p>
-                      <div className="mt-3 bg-white p-3 rounded-xl border border-slate-100 text-[10px] text-slate-700 leading-relaxed italic">
+                      <p className="text-[10px] text-blue-600 font-bold uppercase">{p.doctor_specialty}</p>
+                      <div className="mt-3 bg-white p-3 rounded-xl border border-slate-100 text-[10px] text-slate-700 italic">
                          {p.medicines}
                       </div>
                    </Card>
-                 )) : (
-                   <p className="text-center py-20 text-slate-300 font-black text-[10px] uppercase tracking-widest border-2 border-dashed border-slate-50 rounded-3xl">কোনো ইতিহাস পাওয়া যায়নি</p>
-                 )}
+                 )) : <p className="text-center py-20 text-slate-300 font-black text-[10px] uppercase border-2 border-dashed rounded-3xl">কোনো ইতিহাস পাওয়া যায়নি</p>}
               </div>
            </div>
         </div>
@@ -604,12 +566,8 @@ export default function App() {
       {/* Auth Modal */}
       {showAuthModal && (
         <div className="fixed inset-0 z-[110] bg-black/80 backdrop-blur-xl flex items-center justify-center p-6">
-          <Card className="w-full max-w-sm p-8 space-y-6 shadow-2xl animate-in zoom-in-95 duration-200">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-black text-slate-800">{authMode === 'login' ? 'লগিন' : authMode === 'moderator' ? 'মডারেটর লগিন' : 'রেজিস্ট্রেশন'}</h2>
-              <button onClick={() => setShowAuthModal(false)} className="text-slate-400 hover:text-slate-800 text-xl font-bold">✕</button>
-            </div>
-
+          <Card className="w-full max-w-sm p-8 space-y-6 animate-in zoom-in-95 duration-200">
+            <h2 className="text-2xl font-black text-slate-800 mb-4">{authMode === 'login' ? 'লগিন' : authMode === 'moderator' ? 'মডারেটর লগিন' : 'রেজিস্ট্রেশন'}</h2>
             <form onSubmit={handleAuth} className="space-y-4">
               {authMode === 'register' && (
                 <>
@@ -623,50 +581,48 @@ export default function App() {
               )}
               <Input label={authMode === 'moderator' ? "ইউজারনেম" : "ইমেইল এড্রেস"} name="email" placeholder={authMode === 'moderator' ? "modaretor" : "example@mail.com"} required />
               <Input label="পাসওয়ার্ড" name="password" type="password" placeholder="••••••••" required />
-              <Button type="submit" loading={isProcessing} className="w-full py-4 mt-2 rounded-2xl shadow-blue-200">
-                {authMode === 'register' ? 'অ্যাকাউন্ট খুলুন' : 'প্রবেশ করুন'}
-              </Button>
+              <Button type="submit" loading={isProcessing} className="w-full py-4 mt-2">প্রবেশ করুন</Button>
             </form>
-
-            <div className="flex flex-col gap-3 pt-5 border-t border-slate-50">
-              <button onClick={() => setAuthMode(authMode === 'login' ? 'register' : 'login')} className="text-[10px] font-black text-blue-600 uppercase tracking-widest text-center">{authMode === 'login' ? 'নতুন অ্যাকাউন্ট খুলুন' : 'লগিন করুন'}</button>
-              <button onClick={() => setAuthMode('moderator')} className="text-[10px] font-black text-red-600 uppercase tracking-widest text-center border-t pt-3 border-slate-50">মডারেটর লগিন</button>
+            <div className="flex flex-col gap-3 pt-4 border-t border-slate-100 text-center">
+              <button onClick={() => setAuthMode(authMode === 'login' ? 'register' : 'login')} className="text-[10px] font-black text-blue-600 uppercase tracking-widest">{authMode === 'login' ? 'নতুন অ্যাকাউন্ট' : 'লগিন করুন'}</button>
+              <button onClick={() => setAuthMode('moderator')} className="text-[10px] font-black text-red-600 uppercase tracking-widest border-t pt-2">মডারেটর লগিন</button>
+              <button onClick={() => setShowAuthModal(false)} className="text-slate-400 font-bold text-xs">বাতিল</button>
             </div>
           </Card>
         </div>
       )}
 
-      {/* Global Payment Modal */}
+      {/* Payment Modal */}
       {showPayment.show && (
         <div className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-md flex items-end justify-center p-4">
            <div className="bg-white w-full max-w-lg rounded-t-[48px] p-8 pb-12 space-y-6 max-h-[92vh] overflow-y-auto animate-in slide-in-from-bottom-20 duration-500">
               <div className="flex justify-between items-center border-b pb-4">
                  <h2 className="text-xl font-black text-slate-800">পেমেন্ট: {showPayment.item}</h2>
-                 <button onClick={() => setShowPayment({show: false, amount: 0, item: '', shipping: 0})} className="text-slate-300 hover:text-slate-800 text-2xl font-bold">✕</button>
+                 <button onClick={() => setShowPayment({show: false, amount: 0, item: '', shipping: 0})} className="text-slate-300 text-2xl font-bold">✕</button>
               </div>
-              <div className="bg-blue-50 p-6 rounded-[32px] text-center shadow-inner border border-blue-100">
+              <div className="bg-blue-50 p-6 rounded-[32px] text-center border border-blue-100">
                  <p className="text-3xl font-black text-blue-600">৳{showPayment.amount + showPayment.shipping}</p>
-                 <p className="text-[10px] font-black text-slate-400 uppercase mt-1 tracking-widest">সর্বমোট পরিমাণ</p>
+                 <p className="text-[10px] font-black text-slate-400 uppercase mt-1">সর্বমোট পরিমাণ</p>
               </div>
               {!paymentMethod ? (
                 <div className="grid grid-cols-2 gap-4">
-                  <button onClick={() => setPaymentMethod('bkash')} className="p-6 border-2 border-slate-50 rounded-[32px] flex flex-col items-center gap-3 bg-white hover:border-pink-500 transition-all group">
-                    <img src="https://www.logo.wine/a/logo/BKash/BKash-Logo.wine.svg" className="w-14 h-14 group-hover:scale-110 transition-transform" />
-                    <span className="text-[11px] font-black text-pink-600 uppercase tracking-widest">বিকাশ</span>
+                  <button onClick={() => setPaymentMethod('bkash')} className="p-6 border-2 border-slate-50 rounded-[32px] flex flex-col items-center gap-3 bg-white hover:border-pink-500 transition-all">
+                    <img src="https://www.logo.wine/a/logo/BKash/BKash-Logo.wine.svg" className="w-14 h-14" />
+                    <span className="text-[11px] font-black text-pink-600 uppercase">বিকাশ</span>
                   </button>
-                  <button onClick={() => setPaymentMethod('nagad')} className="p-6 border-2 border-slate-50 rounded-[32px] flex flex-col items-center gap-3 bg-white hover:border-orange-500 transition-all group">
-                    <img src="https://download.logo.wine/logo/Nagad/Nagad-Logo.wine.png" className="w-14 h-14 group-hover:scale-110 transition-transform" />
-                    <span className="text-[11px] font-black text-orange-600 uppercase tracking-widest">নগদ</span>
+                  <button onClick={() => setPaymentMethod('nagad')} className="p-6 border-2 border-slate-50 rounded-[32px] flex flex-col items-center gap-3 bg-white hover:border-orange-500 transition-all">
+                    <img src="https://download.logo.wine/logo/Nagad/Nagad-Logo.wine.png" className="w-14 h-14" />
+                    <span className="text-[11px] font-black text-orange-600 uppercase">নগদ</span>
                   </button>
                 </div>
               ) : (
                 <div className="space-y-5 animate-in fade-in">
                   <div className="p-5 bg-slate-50 rounded-2xl flex justify-between items-center font-black border border-slate-100">
                     <span className="text-slate-700 text-lg">{PAYMENT_NUMBERS[paymentMethod]}</span>
-                    <button onClick={() => { navigator.clipboard.writeText(PAYMENT_NUMBERS[paymentMethod]); alert('নম্বর কপি হয়েছে!'); }} className="bg-blue-600 text-white text-[10px] font-black px-4 py-2 rounded-xl shadow-lg shadow-blue-100">📋 কপি</button>
+                    <button onClick={() => { navigator.clipboard.writeText(PAYMENT_NUMBERS[paymentMethod]); alert('নম্বর কপি হয়েছে!'); }} className="bg-blue-600 text-white text-[10px] font-black px-4 py-2 rounded-xl">📋 কপি</button>
                   </div>
-                  <Input label="পেমেন্ট ট্রানজেকশন আইডি (TrxID)" placeholder="ABC123XYZ" required value="" onChange={() => {}} />
-                  <Button variant="success" className="w-full py-4 mt-2 rounded-[22px] shadow-green-100" onClick={() => { alert('আপনার রিকোয়েস্ট পাঠানো হয়েছে!'); setShowPayment({show: false, amount: 0, item: '', shipping: 0}); setPaymentMethod(null); }}>নিশ্চিত করুন</Button>
+                  <Input label="ট্রানজেকশন আইডি (TrxID)" placeholder="ABC123XYZ" required value="" onChange={() => {}} />
+                  <Button variant="success" className="w-full py-4 mt-2 rounded-[22px]" onClick={() => { alert('আপনার রিকোয়েস্ট পাঠানো হয়েছে!'); setShowPayment({show: false, amount: 0, item: '', shipping: 0}); setPaymentMethod(null); }}>নিশ্চিত করুন</Button>
                 </div>
               )}
            </div>
