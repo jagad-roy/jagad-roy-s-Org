@@ -161,9 +161,9 @@ export default function App() {
 
   const fetchData = async () => {
     const [docRes, hospRes, testRes] = await Promise.all([
-      supabase.from('doctors').select('*'),
-      supabase.from('hospitals').select('*'),
-      supabase.from('lab_tests').select('*')
+      supabase.from('doctor').select('*'),
+      supabase.from('hospital').select('*'),
+      supabase.from('lab_test').select('*')
     ]);
     
     // Fallback to constants if DB is empty (Initial Seed simulation)
@@ -327,7 +327,7 @@ export default function App() {
   };
 
   // --- Data Management Functions ---
-  const handleSaveData = async (type: 'doctors' | 'hospitals' | 'lab_tests', item: any) => {
+  const handleSaveData = async (type: 'doctor' | 'hospital' | 'lab_test', item: any) => {
     if (!user || profile?.role !== UserRole.ADMIN) return;
     setIsProcessing(true);
     try {
@@ -352,10 +352,10 @@ export default function App() {
     if (!user || profile?.role !== UserRole.ADMIN || !confirm('এটি আপনার সুপাবেস অ্যাকাউন্টে প্রাথমিক ডেটা যোগ করবে। আপনি কি নিশ্চিত?')) return;
     setIsProcessing(true);
     try {
-      // Attempt to seed doctors
-      const { error: dErr } = await supabase.from('doctors').upsert(DOCTORS);
-      const { error: hErr } = await supabase.from('hospitals').upsert(CLINICS);
-      const { error: tErr } = await supabase.from('lab_tests').upsert(LAB_TESTS);
+      // Attempt to seed
+      const { error: dErr } = await supabase.from('doctor').upsert(DOCTORS);
+      const { error: hErr } = await supabase.from('hospital').upsert(CLINICS);
+      const { error: tErr } = await supabase.from('lab_test').upsert(LAB_TESTS);
       
       if (dErr || hErr || tErr) {
         throw new Error(`সিডিং এরর: ${dErr?.message || ''} ${hErr?.message || ''} ${tErr?.message || ''}`);
@@ -370,7 +370,7 @@ export default function App() {
     }
   };
 
-  const handleDeleteData = async (type: 'doctors' | 'hospitals' | 'lab_tests', id: string) => {
+  const handleDeleteData = async (type: 'doctor' | 'hospital' | 'lab_test', id: string) => {
     if (!user || profile?.role !== UserRole.ADMIN || !confirm('আপনি কি নিশ্চিত?')) return;
     setIsProcessing(true);
     try {
@@ -690,7 +690,7 @@ export default function App() {
                           </div>
                           <div className="flex gap-2">
                             <button onClick={() => { setEditingItem(d); setTempImage(d.image); setShowAddModal(true); }} className="text-blue-600 text-[10px] font-black uppercase">Edit</button>
-                            <button onClick={() => handleDeleteData('doctors', d.id)} className="text-red-600 text-[10px] font-black uppercase">Del</button>
+                            <button onClick={() => handleDeleteData('doctor', d.id)} className="text-red-600 text-[10px] font-black uppercase">Del</button>
                           </div>
                         </Card>
                       ))}
@@ -705,7 +705,7 @@ export default function App() {
                           </div>
                           <div className="flex gap-2">
                             <button onClick={() => { setEditingItem(h); setTempImage(h.image); setShowAddModal(true); }} className="text-blue-600 text-[10px] font-black uppercase">Edit</button>
-                            <button onClick={() => handleDeleteData('hospitals', h.id)} className="text-red-600 text-[10px] font-black uppercase">Del</button>
+                            <button onClick={() => handleDeleteData('hospital', h.id)} className="text-red-600 text-[10px] font-black uppercase">Del</button>
                           </div>
                         </Card>
                       ))}
@@ -717,7 +717,7 @@ export default function App() {
                           </div>
                           <div className="flex gap-2">
                             <button onClick={() => { setEditingItem(t); setShowAddModal(true); }} className="text-blue-600 text-[10px] font-black uppercase">Edit</button>
-                            <button onClick={() => handleDeleteData('lab_tests', t.id)} className="text-red-600 text-[10px] font-black uppercase">Del</button>
+                            <button onClick={() => handleDeleteData('lab_test', t.id)} className="text-red-600 text-[10px] font-black uppercase">Del</button>
                           </div>
                         </Card>
                       ))}
@@ -914,8 +914,8 @@ export default function App() {
               }
               
               handleSaveData(
-                adminDataTab === 'doctors' ? 'doctors' : 
-                adminDataTab === 'hospitals' ? 'hospitals' : 'lab_tests', 
+                adminDataTab === 'doctors' ? 'doctor' : 
+                adminDataTab === 'hospitals' ? 'hospital' : 'lab_test', 
                 finalData
               );
             }} className="space-y-4">
