@@ -129,6 +129,7 @@ export default function App() {
   const [selectedUserRecords, setSelectedUserRecords] = useState<{p: Profile, recs: Prescription[], ords: Order[]} | null>(null);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [tempImage, setTempImage] = useState<string | null>(null);
 
   const PAYMENT_NUMBERS = { bkash: '01518395772', nagad: '01846800973' };
 
@@ -382,6 +383,17 @@ export default function App() {
       alert('ডিলিট করা যায়নি।');
     } finally {
       setIsProcessing(false);
+    }
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setTempImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -664,29 +676,35 @@ export default function App() {
                       <button onClick={() => setAdminDataTab('tests')} className={`flex-1 py-2 rounded-lg text-[9px] font-black uppercase ${adminDataTab === 'tests' ? 'bg-white shadow text-blue-600' : 'text-slate-400'}`}>Tests</button>
                     </div>
 
-                    <Button onClick={() => { setEditingItem({}); setShowAddModal(true); }} className="w-full py-3 rounded-xl">+ Add New {adminDataTab}</Button>
+                    <Button onClick={() => { setEditingItem({}); setTempImage(null); setShowAddModal(true); }} className="w-full py-3 rounded-xl">+ Add New {adminDataTab}</Button>
 
                     <div className="space-y-3">
                       {adminDataTab === 'doctors' && doctors.map(d => (
                         <Card key={d.id} className="flex justify-between items-center">
-                          <div>
-                            <p className="text-xs font-black">{d.name}</p>
-                            <p className="text-[9px] text-slate-400">{d.specialty} • {d.degree}</p>
+                          <div className="flex items-center gap-3">
+                            <img src={d.image} className="w-10 h-10 rounded-lg object-cover border" />
+                            <div>
+                              <p className="text-xs font-black">{d.name}</p>
+                              <p className="text-[9px] text-slate-400">{d.specialty} • {d.degree}</p>
+                            </div>
                           </div>
                           <div className="flex gap-2">
-                            <button onClick={() => { setEditingItem(d); setShowAddModal(true); }} className="text-blue-600 text-[10px] font-black uppercase">Edit</button>
+                            <button onClick={() => { setEditingItem(d); setTempImage(d.image); setShowAddModal(true); }} className="text-blue-600 text-[10px] font-black uppercase">Edit</button>
                             <button onClick={() => handleDeleteData('doctors', d.id)} className="text-red-600 text-[10px] font-black uppercase">Del</button>
                           </div>
                         </Card>
                       ))}
                       {adminDataTab === 'hospitals' && hospitals.map(h => (
                         <Card key={h.id} className="flex justify-between items-center">
-                          <div>
-                            <p className="text-xs font-black">{h.name}</p>
-                            <p className="text-[9px] text-slate-400">{h.address}</p>
+                          <div className="flex items-center gap-3">
+                            <img src={h.image} className="w-10 h-10 rounded-lg object-cover border" />
+                            <div>
+                              <p className="text-xs font-black">{h.name}</p>
+                              <p className="text-[9px] text-slate-400">{h.address}</p>
+                            </div>
                           </div>
                           <div className="flex gap-2">
-                            <button onClick={() => { setEditingItem(h); setShowAddModal(true); }} className="text-blue-600 text-[10px] font-black uppercase">Edit</button>
+                            <button onClick={() => { setEditingItem(h); setTempImage(h.image); setShowAddModal(true); }} className="text-blue-600 text-[10px] font-black uppercase">Edit</button>
                             <button onClick={() => handleDeleteData('hospitals', h.id)} className="text-red-600 text-[10px] font-black uppercase">Del</button>
                           </div>
                         </Card>
@@ -874,7 +892,7 @@ export default function App() {
                   districts: [rawData.district],
                   clinics: [rawData.clinic],
                   schedule: rawData.schedule,
-                  image: rawData.image || `https://picsum.photos/200/200?doc=${id}`,
+                  image: tempImage || editingItem?.image || `https://picsum.photos/200/200?doc=${id}`,
                   availableToday: true,
                   rating: editingItem?.rating || 5.0
                 };
@@ -884,7 +902,7 @@ export default function App() {
                   name: rawData.name,
                   district: rawData.district,
                   address: rawData.address,
-                  image: rawData.image || `https://picsum.photos/400/300?hosp=${id}`,
+                  image: tempImage || editingItem?.image || `https://picsum.photos/400/300?hosp=${id}`,
                   doctors: editingItem?.doctors || []
                 };
               } else if (adminDataTab === 'tests') {
@@ -901,6 +919,20 @@ export default function App() {
                 finalData
               );
             }} className="space-y-4">
+              {(adminDataTab === 'doctors' || adminDataTab === 'hospitals') && (
+                <div className="flex flex-col items-center gap-4 p-4 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200">
+                  {tempImage ? (
+                    <img src={tempImage} className="w-32 h-32 rounded-2xl object-cover shadow-md border-2 border-white" />
+                  ) : (
+                    <div className="w-32 h-32 rounded-2xl bg-slate-200 flex items-center justify-center text-slate-400 text-4xl">🖼️</div>
+                  )}
+                  <label className="bg-blue-600 text-white px-6 py-2 rounded-xl text-[10px] font-black uppercase cursor-pointer hover:bg-blue-700 transition-colors">
+                    ছবি সিলেক্ট করুন
+                    <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+                  </label>
+                  <p className="text-[8px] text-slate-400 font-bold uppercase">গ্যালারি থেকে ছবি আপলোড করুন</p>
+                </div>
+              )}
               {adminDataTab === 'doctors' && (
                 <>
                   <Input label="Name" name="name" defaultValue={editingItem?.name} required />
@@ -909,7 +941,6 @@ export default function App() {
                   <Input label="District" name="district" defaultValue={editingItem?.districts?.[0]} required />
                   <Input label="Clinic ID" name="clinic" defaultValue={editingItem?.clinics?.[0]} required />
                   <Input label="Schedule" name="schedule" defaultValue={editingItem?.schedule} required />
-                  <Input label="Image URL" name="image" defaultValue={editingItem?.image} />
                 </>
               )}
               {adminDataTab === 'hospitals' && (
@@ -917,7 +948,6 @@ export default function App() {
                   <Input label="Hospital Name" name="name" defaultValue={editingItem?.name} required />
                   <Input label="District" name="district" defaultValue={editingItem?.district} required />
                   <Input label="Address" name="address" defaultValue={editingItem?.address} required />
-                  <Input label="Image URL" name="image" defaultValue={editingItem?.image} />
                 </>
               )}
               {adminDataTab === 'tests' && (
