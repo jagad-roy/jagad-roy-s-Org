@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { UserRole, Doctor, Clinic, Medicine, Order, Profile, Prescription } from './types';
+import { UserRole, Doctor, Clinic, Medicine, Order, Profile, Prescription, LabTest } from './types';
 import { DOCTORS, CLINICS, MEDICINES, EMERGENCY_SERVICES, DISTRICTS, LAB_TESTS, SPECIALTIES } from './constants';
 import { gemini } from './services/geminiService';
 import { supabase } from './services/supabaseClient';
@@ -62,12 +62,13 @@ const Input: React.FC<{
   label: string,
   type?: string,
   placeholder?: string,
-  value: string,
+  value?: string,
+  defaultValue?: string,
   onChange?: (val: string) => void,
   required?: boolean,
   className?: string,
   name?: string
-}> = ({ label, type = "text", placeholder, value, onChange, required = false, className = "", name }) => (
+}> = ({ label, type = "text", placeholder, value, defaultValue, onChange, required = false, className = "", name }) => (
   <div className={`space-y-1.5 w-full ${className}`}>
     <label className="text-[10px] font-black text-slate-400 uppercase ml-2 tracking-widest">{label}</label>
     <input 
@@ -75,6 +76,7 @@ const Input: React.FC<{
       type={type}
       placeholder={placeholder}
       value={value}
+      defaultValue={defaultValue}
       onChange={(e) => onChange ? onChange(e.target.value) : null}
       required={required}
       className="w-full bg-slate-50 border-2 border-transparent focus:border-blue-500 rounded-2xl px-5 py-3 text-sm font-bold text-slate-700 outline-none transition-all placeholder:text-slate-300"
@@ -118,9 +120,15 @@ export default function App() {
   const [allProfiles, setAllProfiles] = useState<Profile[]>([]);
   const [allPrescriptions, setAllPrescriptions] = useState<Prescription[]>([]);
   const [allOrders, setAllOrders] = useState<Order[]>([]);
+  const [doctors, setDoctors] = useState<Doctor[]>([]);
+  const [hospitals, setHospitals] = useState<Clinic[]>([]);
+  const [labTests, setLabTests] = useState<LabTest[]>([]);
   const [historyTab, setHistoryTab] = useState<'info' | 'history' | 'admin'>('info');
-  const [adminSubTab, setAdminSubTab] = useState<'log' | 'users' | 'orders' | 'settings'>('log');
+  const [adminSubTab, setAdminSubTab] = useState<'log' | 'users' | 'orders' | 'settings' | 'data'>('log');
+  const [adminDataTab, setAdminDataTab] = useState<'doctors' | 'hospitals' | 'tests'>('doctors');
   const [selectedUserRecords, setSelectedUserRecords] = useState<{p: Profile, recs: Prescription[], ords: Order[]} | null>(null);
+  const [editingItem, setEditingItem] = useState<any>(null);
+  const [showAddModal, setShowAddModal] = useState(false);
 
   const PAYMENT_NUMBERS = { bkash: '01518395772', nagad: '01846800973' };
 
@@ -141,10 +149,27 @@ export default function App() {
       }
       const { data: settings } = await supabase.from('settings').select('*').eq('key', 'ticker_message').single();
       if (settings) setTickerMessage(settings.value);
+      
+      // Fetch initial data
+      await fetchData();
+      
       setIsLoading(false);
     };
     init();
   }, []);
+
+  const fetchData = async () => {
+    const [docRes, hospRes, testRes] = await Promise.all([
+      supabase.from('doctors').select('*'),
+      supabase.from('hospitals').select('*'),
+      supabase.from('lab_tests').select('*')
+    ]);
+    
+    // Fallback to constants if DB is empty (Initial Seed simulation)
+    setDoctors(docRes.data && docRes.data.length > 0 ? docRes.data : DOCTORS);
+    setHospitals(hospRes.data && hospRes.data.length > 0 ? hospRes.data : CLINICS);
+    setLabTests(testRes.data && testRes.data.length > 0 ? testRes.data : LAB_TESTS);
+  };
 
   useEffect(() => {
     if (user) {
@@ -244,18 +269,18 @@ export default function App() {
   };
 
   const filteredDoctors = useMemo(() => {
-    let list = DOCTORS;
+    let list = doctors;
     if (selectedHospitalId) list = list.filter(d => d.clinics.includes(selectedHospitalId));
     if (selectedSpecialty) list = list.filter(d => d.specialty.toLowerCase() === selectedSpecialty.toLowerCase());
     return list.filter(d => 
       d.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
       d.specialty.toLowerCase().includes(searchTerm.toLowerCase())
     );
-  }, [searchTerm, selectedHospitalId, selectedSpecialty]);
+  }, [searchTerm, selectedHospitalId, selectedSpecialty, doctors]);
 
   const filteredLabTests = useMemo(() => {
-    return LAB_TESTS.filter(t => t.name.toLowerCase().includes(searchTerm.toLowerCase()));
-  }, [searchTerm]);
+    return labTests.filter(t => t.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  }, [searchTerm, labTests]);
 
   const masterLogFiltered = useMemo(() => {
     return allPrescriptions.filter(p => 
@@ -298,6 +323,41 @@ export default function App() {
       alert('অর্ডার সম্পন্ন করা যায়নি।');
     }
     setIsProcessing(false);
+  };
+
+  // --- Data Management Functions ---
+  const handleSaveData = async (type: 'doctors' | 'hospitals' | 'lab_tests', item: any) => {
+    if (!user || profile?.role !== UserRole.ADMIN) return;
+    setIsProcessing(true);
+    try {
+      const { error } = await supabase.from(type).upsert(item);
+      if (error) throw error;
+      alert('সফলভাবে সেভ হয়েছে!');
+      setShowAddModal(false);
+      setEditingItem(null);
+      await fetchData();
+    } catch (err: any) {
+      console.error(err);
+      alert('সেভ করা যায়নি।');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleDeleteData = async (type: 'doctors' | 'hospitals' | 'lab_tests', id: string) => {
+    if (!user || profile?.role !== UserRole.ADMIN || !confirm('আপনি কি নিশ্চিত?')) return;
+    setIsProcessing(true);
+    try {
+      const { error } = await supabase.from(type).delete().eq('id', id);
+      if (error) throw error;
+      alert('সফলভাবে ডিলিট হয়েছে!');
+      await fetchData();
+    } catch (err: any) {
+      console.error(err);
+      alert('ডিলিট করা যায়নি।');
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   // --- Update ticker message in database ---
@@ -454,7 +514,7 @@ export default function App() {
 
                {homeSubCategory === 'hospitals' && (
                  <div className="space-y-4 pb-36">
-                    {CLINICS.map(c => (
+                    {hospitals.map(c => (
                       <Card key={c.id} className="p-0 overflow-hidden relative cursor-pointer group" onClick={() => { setSelectedHospitalId(c.id); setHomeSubCategory('doctors'); }}>
                          <img src={c.image} className="w-full h-44 object-cover group-hover:scale-105 transition-transform duration-500" />
                          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent p-6 text-white">
@@ -567,8 +627,60 @@ export default function App() {
                    <button onClick={() => setAdminSubTab('log')} className={`pb-3 text-[11px] font-black uppercase whitespace-nowrap tracking-wider ${adminSubTab === 'log' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400'}`}>Visits</button>
                    <button onClick={() => setAdminSubTab('users')} className={`pb-3 text-[11px] font-black uppercase whitespace-nowrap tracking-wider ${adminSubTab === 'users' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400'}`}>Users</button>
                    <button onClick={() => setAdminSubTab('orders')} className={`pb-3 text-[11px] font-black uppercase whitespace-nowrap tracking-wider ${adminSubTab === 'orders' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400'}`}>Orders</button>
+                   <button onClick={() => setAdminSubTab('data')} className={`pb-3 text-[11px] font-black uppercase whitespace-nowrap tracking-wider ${adminSubTab === 'data' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400'}`}>Manage Data</button>
                    <button onClick={() => setAdminSubTab('settings')} className={`pb-3 text-[11px] font-black uppercase whitespace-nowrap tracking-wider ${adminSubTab === 'settings' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400'}`}>Settings</button>
                 </div>
+
+                {adminSubTab === 'data' && (
+                  <div className="space-y-6">
+                    <div className="flex bg-slate-100 p-1 rounded-xl">
+                      <button onClick={() => setAdminDataTab('doctors')} className={`flex-1 py-2 rounded-lg text-[9px] font-black uppercase ${adminDataTab === 'doctors' ? 'bg-white shadow text-blue-600' : 'text-slate-400'}`}>Doctors</button>
+                      <button onClick={() => setAdminDataTab('hospitals')} className={`flex-1 py-2 rounded-lg text-[9px] font-black uppercase ${adminDataTab === 'hospitals' ? 'bg-white shadow text-blue-600' : 'text-slate-400'}`}>Hospitals</button>
+                      <button onClick={() => setAdminDataTab('tests')} className={`flex-1 py-2 rounded-lg text-[9px] font-black uppercase ${adminDataTab === 'tests' ? 'bg-white shadow text-blue-600' : 'text-slate-400'}`}>Tests</button>
+                    </div>
+
+                    <Button onClick={() => { setEditingItem({}); setShowAddModal(true); }} className="w-full py-3 rounded-xl">+ Add New {adminDataTab}</Button>
+
+                    <div className="space-y-3">
+                      {adminDataTab === 'doctors' && doctors.map(d => (
+                        <Card key={d.id} className="flex justify-between items-center">
+                          <div>
+                            <p className="text-xs font-black">{d.name}</p>
+                            <p className="text-[9px] text-slate-400">{d.specialty} • {d.degree}</p>
+                          </div>
+                          <div className="flex gap-2">
+                            <button onClick={() => { setEditingItem(d); setShowAddModal(true); }} className="text-blue-600 text-[10px] font-black uppercase">Edit</button>
+                            <button onClick={() => handleDeleteData('doctors', d.id)} className="text-red-600 text-[10px] font-black uppercase">Del</button>
+                          </div>
+                        </Card>
+                      ))}
+                      {adminDataTab === 'hospitals' && hospitals.map(h => (
+                        <Card key={h.id} className="flex justify-between items-center">
+                          <div>
+                            <p className="text-xs font-black">{h.name}</p>
+                            <p className="text-[9px] text-slate-400">{h.address}</p>
+                          </div>
+                          <div className="flex gap-2">
+                            <button onClick={() => { setEditingItem(h); setShowAddModal(true); }} className="text-blue-600 text-[10px] font-black uppercase">Edit</button>
+                            <button onClick={() => handleDeleteData('hospitals', h.id)} className="text-red-600 text-[10px] font-black uppercase">Del</button>
+                          </div>
+                        </Card>
+                      ))}
+                      {adminDataTab === 'tests' && labTests.map(t => (
+                        <Card key={t.id} className="flex justify-between items-center">
+                          <div>
+                            <p className="text-xs font-black">{t.name}</p>
+                            <p className="text-[9px] text-slate-400">Price: ৳{t.price}</p>
+                          </div>
+                          <div className="flex gap-2">
+                            <button onClick={() => { setEditingItem(t); setShowAddModal(true); }} className="text-blue-600 text-[10px] font-black uppercase">Edit</button>
+                            <button onClick={() => handleDeleteData('lab_tests', t.id)} className="text-red-600 text-[10px] font-black uppercase">Del</button>
+                          </div>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {adminSubTab === 'log' && (
                   <div className="space-y-4">
@@ -703,6 +815,70 @@ export default function App() {
               <button onClick={() => setAuthMode('moderator')} className="text-[10px] font-black text-red-600 uppercase border-t pt-3 tracking-widest opacity-60">Admin/Moderator Dashboard</button>
               <button onClick={() => setShowAuthModal(false)} className="text-slate-400 font-bold text-xs uppercase hover:text-slate-600 transition-colors">Dismiss</button>
             </div>
+          </Card>
+        </div>
+      )}
+
+      {/* Data Add/Edit Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 z-[120] bg-black/90 backdrop-blur-xl flex items-center justify-center p-6">
+          <Card className="w-full max-w-md p-8 space-y-6 max-h-[90vh] overflow-y-auto rounded-[32px]">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-black text-slate-800 uppercase">Manage {adminDataTab}</h2>
+              <button onClick={() => setShowAddModal(false)} className="text-slate-300 hover:text-slate-600">✕</button>
+            </div>
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(e.currentTarget);
+              const data: any = Object.fromEntries(formData.entries());
+              if (editingItem?.id) data.id = editingItem.id;
+              else data.id = Math.random().toString(36).substr(2, 9);
+              
+              if (adminDataTab === 'doctors') {
+                data.districts = [data.district]; // simplified
+                data.clinics = [data.clinic]; // simplified
+                data.availableToday = true;
+                data.rating = editingItem?.rating || 5.0;
+                data.image = data.image || `https://picsum.photos/200/200?doc=${data.id}`;
+              }
+              if (adminDataTab === 'hospitals') {
+                data.doctors = [];
+                data.image = data.image || `https://picsum.photos/400/300?hosp=${data.id}`;
+              }
+              
+              handleSaveData(
+                adminDataTab === 'doctors' ? 'doctors' : 
+                adminDataTab === 'hospitals' ? 'hospitals' : 'lab_tests', 
+                data
+              );
+            }} className="space-y-4">
+              {adminDataTab === 'doctors' && (
+                <>
+                  <Input label="Name" name="name" defaultValue={editingItem?.name} required />
+                  <Input label="Degree" name="degree" defaultValue={editingItem?.degree} required />
+                  <Input label="Specialty" name="specialty" defaultValue={editingItem?.specialty} required />
+                  <Input label="District" name="district" defaultValue={editingItem?.districts?.[0]} required />
+                  <Input label="Clinic ID" name="clinic" defaultValue={editingItem?.clinics?.[0]} required />
+                  <Input label="Schedule" name="schedule" defaultValue={editingItem?.schedule} required />
+                  <Input label="Image URL" name="image" defaultValue={editingItem?.image} />
+                </>
+              )}
+              {adminDataTab === 'hospitals' && (
+                <>
+                  <Input label="Hospital Name" name="name" defaultValue={editingItem?.name} required />
+                  <Input label="District" name="district" defaultValue={editingItem?.district} required />
+                  <Input label="Address" name="address" defaultValue={editingItem?.address} required />
+                  <Input label="Image URL" name="image" defaultValue={editingItem?.image} />
+                </>
+              )}
+              {adminDataTab === 'tests' && (
+                <>
+                  <Input label="Test Name" name="name" defaultValue={editingItem?.name} required />
+                  <Input label="Price" name="price" type="number" defaultValue={editingItem?.price} required />
+                </>
+              )}
+              <Button type="submit" loading={isProcessing} className="w-full py-4 rounded-2xl">Save Changes</Button>
+            </form>
           </Card>
         </div>
       )}
