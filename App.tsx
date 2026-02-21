@@ -331,14 +331,39 @@ export default function App() {
     setIsProcessing(true);
     try {
       const { error } = await supabase.from(type).upsert(item);
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase Error:", error);
+        throw new Error(`সুপাবেস এরর: ${error.message} (Code: ${error.code})`);
+      }
       alert('সফলভাবে সেভ হয়েছে!');
       setShowAddModal(false);
       setEditingItem(null);
       await fetchData();
     } catch (err: any) {
       console.error(err);
-      alert('সেভ করা যায়নি।');
+      alert(err.message || 'সেভ করা যায়নি।');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const seedDatabase = async () => {
+    if (!user || profile?.role !== UserRole.ADMIN || !confirm('এটি আপনার সুপাবেস অ্যাকাউন্টে প্রাথমিক ডেটা যোগ করবে। আপনি কি নিশ্চিত?')) return;
+    setIsProcessing(true);
+    try {
+      // Attempt to seed doctors
+      const { error: dErr } = await supabase.from('doctors').upsert(DOCTORS);
+      const { error: hErr } = await supabase.from('hospitals').upsert(CLINICS);
+      const { error: tErr } = await supabase.from('lab_tests').upsert(LAB_TESTS);
+      
+      if (dErr || hErr || tErr) {
+        throw new Error(`সিডিং এরর: ${dErr?.message || ''} ${hErr?.message || ''} ${tErr?.message || ''}`);
+      }
+      
+      alert('ডেটাবেস সফলভাবে সিড হয়েছে!');
+      await fetchData();
+    } catch (err: any) {
+      alert('সিড করা যায়নি। সম্ভবত টেবিলগুলো তৈরি করা নেই। এরর: ' + err.message);
     } finally {
       setIsProcessing(false);
     }
@@ -730,6 +755,11 @@ export default function App() {
 
                 {adminSubTab === 'settings' && (
                   <div className="space-y-4">
+                     <div className="bg-amber-50 p-4 rounded-2xl border border-amber-100 mb-4">
+                       <p className="text-[10px] font-black text-amber-700 uppercase mb-2">Database Setup</p>
+                       <p className="text-[9px] text-amber-600 mb-3 leading-relaxed">যদি সেভ না হয়, তবে প্রথমে এই বাটনটি ক্লিক করে আপনার সুপাবেস অ্যাকাউন্টে টেবিলগুলোর ডেটা সিড করুন।</p>
+                       <Button variant="secondary" className="w-full py-3 text-amber-700 border border-amber-200" onClick={seedDatabase} loading={isProcessing}>Setup Database (Seed)</Button>
+                     </div>
                      <textarea value={tickerMessage} onChange={(e) => setTickerMessage(e.target.value)} className="w-full bg-white border-2 p-4 rounded-[32px] text-sm h-32 outline-none focus:border-blue-500 transition-all" />
                      <Button variant="danger" className="w-full py-4 rounded-2xl" onClick={updateTicker} loading={isProcessing}>Update Home Ticker</Button>
                   </div>
