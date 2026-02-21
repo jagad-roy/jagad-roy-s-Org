@@ -830,26 +830,45 @@ export default function App() {
             <form onSubmit={(e) => {
               e.preventDefault();
               const formData = new FormData(e.currentTarget);
-              const data: any = Object.fromEntries(formData.entries());
-              if (editingItem?.id) data.id = editingItem.id;
-              else data.id = Math.random().toString(36).substr(2, 9);
+              const rawData: any = Object.fromEntries(formData.entries());
+              const id = editingItem?.id || Math.random().toString(36).substr(2, 9);
               
+              let finalData: any = { id };
+
               if (adminDataTab === 'doctors') {
-                data.districts = [data.district]; // simplified
-                data.clinics = [data.clinic]; // simplified
-                data.availableToday = true;
-                data.rating = editingItem?.rating || 5.0;
-                data.image = data.image || `https://picsum.photos/200/200?doc=${data.id}`;
-              }
-              if (adminDataTab === 'hospitals') {
-                data.doctors = [];
-                data.image = data.image || `https://picsum.photos/400/300?hosp=${data.id}`;
+                finalData = {
+                  ...finalData,
+                  name: rawData.name,
+                  degree: rawData.degree,
+                  specialty: rawData.specialty,
+                  districts: [rawData.district],
+                  clinics: [rawData.clinic],
+                  schedule: rawData.schedule,
+                  image: rawData.image || `https://picsum.photos/200/200?doc=${id}`,
+                  availableToday: true,
+                  rating: editingItem?.rating || 5.0
+                };
+              } else if (adminDataTab === 'hospitals') {
+                finalData = {
+                  ...finalData,
+                  name: rawData.name,
+                  district: rawData.district,
+                  address: rawData.address,
+                  image: rawData.image || `https://picsum.photos/400/300?hosp=${id}`,
+                  doctors: editingItem?.doctors || []
+                };
+              } else if (adminDataTab === 'tests') {
+                finalData = {
+                  ...finalData,
+                  name: rawData.name,
+                  price: Number(rawData.price)
+                };
               }
               
               handleSaveData(
                 adminDataTab === 'doctors' ? 'doctors' : 
                 adminDataTab === 'hospitals' ? 'hospitals' : 'lab_tests', 
-                data
+                finalData
               );
             }} className="space-y-4">
               {adminDataTab === 'doctors' && (
