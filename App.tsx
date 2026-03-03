@@ -112,8 +112,9 @@ export default function App() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'register' | 'moderator'>('login');
   const [isProcessing, setIsProcessing] = useState(false);
-  const [showPayment, setShowPayment] = useState<{show: boolean, amount: number, item: string, shipping: number}>({show: false, amount: 0, item: '', shipping: 0});
+  const [showPayment, setShowPayment] = useState<{show: boolean, amount: number, item: string, shipping: number, isVideo?: boolean, isClinic?: boolean}>({show: false, amount: 0, item: '', shipping: 0});
   const [paymentMethod, setPaymentMethod] = useState<'bkash' | 'nagad' | null>(null);
+  const [paymentType, setPaymentType] = useState<'online' | 'offline'>('online');
   const [trxId, setTrxId] = useState('');
   
   // Moderator/Admin Control States
@@ -295,7 +296,7 @@ export default function App() {
       setShowAuthModal(true);
       return;
     }
-    if (!trxId) {
+    if (paymentType === 'online' && !trxId) {
       alert('অনুগ্রহ করে TrxID দিন');
       return;
     }
@@ -306,10 +307,11 @@ export default function App() {
       item_name: showPayment.item,
       amount: showPayment.amount,
       shipping: showPayment.shipping,
-      payment_method: paymentMethod || 'bkash',
+      payment_method: paymentType === 'offline' ? 'Cash at Clinic' : (paymentMethod || 'bkash'),
+      payment_type: paymentType,
       sender_name: profile?.full_name || 'Guest',
       sender_contact: profile?.phone || '',
-      trx_id: trxId,
+      trx_id: paymentType === 'offline' ? `OFFLINE-${Math.random().toString(36).substr(2, 6).toUpperCase()}` : trxId,
       status: 'pending'
     };
 
@@ -319,6 +321,7 @@ export default function App() {
       setShowPayment({ show: false, amount: 0, item: '', shipping: 0 });
       setCart([]);
       setTrxId('');
+      setPaymentType('online');
       fetchUserData();
     } else {
       alert('অর্ডার সম্পন্ন করা যায়নি।');
@@ -490,6 +493,30 @@ export default function App() {
 
                {homeSubCategory === 'doctors' && (
                  <div className="space-y-6">
+                    {/* Video Consultation Section */}
+                    {!selectedSpecialty && !selectedHospitalId && (
+                      <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-6 rounded-[32px] text-white shadow-xl shadow-blue-500/20">
+                        <div className="flex justify-between items-center mb-4">
+                          <h3 className="text-sm font-black uppercase tracking-widest">Live Video Consultation</h3>
+                          <span className="bg-white/20 px-3 py-1 rounded-full text-[8px] font-black uppercase">Online Now</span>
+                        </div>
+                        <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2">
+                          {doctors.filter(d => d.isVideoConsultant).map(vd => (
+                            <div key={vd.id} className="min-w-[140px] bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20 flex flex-col items-center text-center">
+                              <img src={vd.image} className="w-14 h-14 rounded-full border-2 border-white/50 mb-2 object-cover" />
+                              <p className="text-[10px] font-black leading-tight mb-1">{vd.name}</p>
+                              <p className="text-[8px] opacity-70 mb-2">{vd.specialty}</p>
+                              <button 
+                                onClick={() => setShowPayment({show: true, amount: vd.consultationFee || 500, item: `Video Consult: ${vd.name}`, shipping: 0, isVideo: true})}
+                                className="bg-white text-blue-600 px-4 py-1.5 rounded-lg text-[9px] font-black uppercase shadow-lg"
+                              >
+                                Call Now
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                     {/* Specialty Bar - Modern On-Going / Draggable Design */}
                     <div className="relative w-full group">
                         <div 
@@ -530,11 +557,21 @@ export default function App() {
                              <p className="text-[10px] text-blue-600 font-black uppercase mt-1 tracking-wider">{d.specialty}</p>
                              <p className="text-[9px] text-slate-400 font-bold leading-snug mt-1 italic">{d.degree}</p>
                              <div className="flex justify-between items-center mt-3 pt-3 border-t border-slate-50">
-                                <span className="text-[9px] font-black text-emerald-600 flex items-center gap-1.5">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                                    {d.schedule}
-                                </span>
-                                <button onClick={() => setShowPayment({show: true, amount: 500, item: `Consultation: ${d.name}`, shipping: 0})} className="text-[10px] bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-black shadow-lg shadow-blue-500/20 active:scale-95 transition-all">সিরিয়াল নিন</button>
+                                <div className="flex flex-col">
+                                  <span className="text-[9px] font-black text-emerald-600 flex items-center gap-1.5">
+                                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                      {d.schedule}
+                                  </span>
+                                  {d.consultationFee && <span className="text-[10px] font-black text-blue-600 mt-0.5">Fee: ৳{d.consultationFee}</span>}
+                                </div>
+                                <div className="flex gap-2">
+                                  {d.isVideoConsultant && (
+                                    <button onClick={() => setShowPayment({show: true, amount: d.consultationFee || 500, item: `Video Consult: ${d.name}`, shipping: 0, isVideo: true})} className="text-[10px] bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2.5 rounded-xl font-black shadow-lg shadow-emerald-500/20 active:scale-95 transition-all flex items-center gap-1">
+                                      <span>📹</span> Video
+                                    </button>
+                                  )}
+                                  <button onClick={() => setShowPayment({show: true, amount: d.consultationFee || 500, item: `Consultation: ${d.name}`, shipping: 0, isClinic: true})} className="text-[10px] bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-black shadow-lg shadow-blue-500/20 active:scale-95 transition-all">সিরিয়াল নিন</button>
+                                </div>
                              </div>
                            </div>
                          </Card>
@@ -972,6 +1009,32 @@ export default function App() {
               </div>
               
               <div className="space-y-5">
+                 {(showPayment.isClinic || showPayment.isVideo) && (
+                   <div className="flex gap-3 bg-slate-50 p-2 rounded-3xl border border-slate-100">
+                     <button 
+                       onClick={() => { setPaymentType('online'); setPaymentMethod(null); }}
+                       className={`flex-1 py-3 rounded-2xl text-[10px] font-black uppercase transition-all ${paymentType === 'online' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400'}`}
+                     >
+                       Pay Online
+                     </button>
+                     {!showPayment.isVideo && (
+                       <button 
+                         onClick={() => { setPaymentType('offline'); setPaymentMethod(null); }}
+                         className={`flex-1 py-3 rounded-2xl text-[10px] font-black uppercase transition-all ${paymentType === 'offline' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400'}`}
+                       >
+                         Pay at Clinic
+                       </button>
+                     )}
+                   </div>
+                 )}
+
+                 {showPayment.isVideo && (
+                   <div className="bg-emerald-50 p-4 rounded-2xl border border-emerald-100 flex items-center gap-3">
+                     <span className="text-xl">📹</span>
+                     <p className="text-[10px] font-black text-emerald-700 uppercase leading-tight">Video call consultations must be paid online to confirm your slot.</p>
+                   </div>
+                 )}
+
                  <div className="bg-slate-50 p-6 rounded-[32px] border border-slate-100">
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Service Details:</p>
                     <p className="text-[12px] font-black text-slate-700 leading-relaxed italic">{showPayment.item}</p>
@@ -982,28 +1045,40 @@ export default function App() {
                  </div>
               </div>
 
-              {!paymentMethod ? (
-                <div className="grid grid-cols-2 gap-6">
-                  <button onClick={() => setPaymentMethod('bkash')} className="p-8 border-2 border-slate-50 rounded-[40px] flex flex-col items-center gap-4 bg-white hover:border-pink-500 hover:shadow-xl transition-all active:scale-95 group">
-                    <img src="https://www.logo.wine/a/logo/BKash/BKash-Logo.wine.svg" className="w-16 h-16 group-hover:scale-110 transition-transform" />
-                    <span className="text-[11px] font-black text-pink-600 uppercase tracking-[0.2em]">Pay bKash</span>
-                  </button>
-                  <button onClick={() => setPaymentMethod('nagad')} className="p-8 border-2 border-slate-50 rounded-[40px] flex flex-col items-center gap-4 bg-white hover:border-orange-500 hover:shadow-xl transition-all active:scale-95 group">
-                    <img src="https://download.logo.wine/logo/Nagad/Nagad-Logo.wine.png" className="w-16 h-16 group-hover:scale-110 transition-transform" />
-                    <span className="text-[11px] font-black text-orange-600 uppercase tracking-[0.2em]">Pay Nagad</span>
-                  </button>
-                </div>
+              {paymentType === 'online' ? (
+                <>
+                  {!paymentMethod ? (
+                    <div className="grid grid-cols-2 gap-6">
+                      <button onClick={() => setPaymentMethod('bkash')} className="p-8 border-2 border-slate-50 rounded-[40px] flex flex-col items-center gap-4 bg-white hover:border-pink-500 hover:shadow-xl transition-all active:scale-95 group">
+                        <img src="https://www.logo.wine/a/logo/BKash/BKash-Logo.wine.svg" className="w-16 h-16 group-hover:scale-110 transition-transform" />
+                        <span className="text-[11px] font-black text-pink-600 uppercase tracking-[0.2em]">Pay bKash</span>
+                      </button>
+                      <button onClick={() => setPaymentMethod('nagad')} className="p-8 border-2 border-slate-50 rounded-[40px] flex flex-col items-center gap-4 bg-white hover:border-orange-500 hover:shadow-xl transition-all active:scale-95 group">
+                        <img src="https://download.logo.wine/logo/Nagad/Nagad-Logo.wine.png" className="w-16 h-16 group-hover:scale-110 transition-transform" />
+                        <span className="text-[11px] font-black text-orange-600 uppercase tracking-[0.2em]">Pay Nagad</span>
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-5">
+                      <div className="p-6 bg-blue-50 rounded-[32px] flex justify-between items-center border border-blue-100 shadow-inner">
+                        <div className="flex flex-col">
+                            <span className="text-[8px] font-black text-blue-400 uppercase mb-1">Send Money to:</span>
+                            <span className="text-blue-700 text-xl font-black tracking-widest">{PAYMENT_NUMBERS[paymentMethod]}</span>
+                        </div>
+                        <button onClick={() => { navigator.clipboard.writeText(PAYMENT_NUMBERS[paymentMethod]); alert('Number Copied!'); }} className="bg-blue-600 text-white text-[10px] font-black px-6 py-3.5 rounded-2xl shadow-lg hover:bg-blue-700 transition-colors">COPY</button>
+                      </div>
+                      <Input label="Transaction ID (TrxID)" placeholder="Enter 10-digit ID" required value={trxId} onChange={setTrxId} />
+                      <Button variant="success" className="w-full py-5 mt-4 rounded-3xl" onClick={submitOrder} loading={isProcessing}>VERIFY & CONFIRM</Button>
+                    </div>
+                  )}
+                </>
               ) : (
                 <div className="space-y-6 animate-in fade-in slide-in-from-bottom-5">
-                  <div className="p-6 bg-blue-50 rounded-[32px] flex justify-between items-center border border-blue-100 shadow-inner">
-                    <div className="flex flex-col">
-                        <span className="text-[8px] font-black text-blue-400 uppercase mb-1">Send Money to:</span>
-                        <span className="text-blue-700 text-xl font-black tracking-widest">{PAYMENT_NUMBERS[paymentMethod]}</span>
-                    </div>
-                    <button onClick={() => { navigator.clipboard.writeText(PAYMENT_NUMBERS[paymentMethod]); alert('Number Copied!'); }} className="bg-blue-600 text-white text-[10px] font-black px-6 py-3.5 rounded-2xl shadow-lg hover:bg-blue-700 transition-colors">COPY</button>
-                  </div>
-                  <Input label="Transaction ID (TrxID)" placeholder="Enter 10-digit ID" required value={trxId} onChange={setTrxId} />
-                  <Button variant="success" className="w-full py-5 mt-4 rounded-3xl" onClick={submitOrder} loading={isProcessing}>VERIFY & CONFIRM</Button>
+                   <div className="bg-amber-50 p-6 rounded-[32px] border border-amber-100">
+                     <p className="text-[11px] font-black text-amber-700 uppercase mb-2">Cash on Visit</p>
+                     <p className="text-[10px] text-amber-600 leading-relaxed">আপনি সরাসরি ক্লিনিকে গিয়ে ফি পরিশোধ করতে পারবেন। আপনার সিরিয়ালটি কনফার্ম করার জন্য নিচের বাটনে ক্লিক করুন।</p>
+                   </div>
+                   <Button variant="success" className="w-full py-5 rounded-3xl" onClick={submitOrder} loading={isProcessing}>CONFIRM APPOINTMENT</Button>
                 </div>
               )}
            </div>

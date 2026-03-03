@@ -23,57 +23,64 @@ export const SPECIALTIES = [
 
 export const DOCTORS: Doctor[] = [
   // --- Medicine ---
-  { id: 'med1', name: 'Dr. Md. Shariful Islam', degree: 'MBBS, BCS (Health), FCPS (Medicine)', specialty: 'Medicine', districts: ['Nilphamari'], clinics: ['c-madina'], schedule: 'Daily: 3 PM - 9 PM', availableToday: true, rating: 4.8, image: 'https://picsum.photos/200/200?doc=med1' },
-  { id: 'med3', name: 'Dr. Amitav Roy', degree: 'MBBS, FCPS (Medicine)', specialty: 'Medicine', districts: ['Nilphamari'], clinics: ['c-ar'], schedule: 'Daily: 5 PM - 8 PM', availableToday: true, rating: 4.7, image: 'https://picsum.photos/200/200?doc=med3' },
+  { id: 'med1', name: 'Dr. Md. Shariful Islam', degree: 'MBBS, BCS (Health), FCPS (Medicine)', specialty: 'Medicine', districts: ['Nilphamari'], clinics: ['c-madina'], schedule: 'Daily: 3 PM - 9 PM', availableToday: true, rating: 4.8, image: 'https://picsum.photos/200/200?doc=med1', consultationFee: 500 },
+  { id: 'med3', name: 'Dr. Amitav Roy', degree: 'MBBS, FCPS (Medicine)', specialty: 'Medicine', districts: ['Nilphamari'], clinics: ['c-ar'], schedule: 'Daily: 5 PM - 8 PM', availableToday: true, rating: 4.7, image: 'https://picsum.photos/200/200?doc=med3', consultationFee: 500 },
 
   // --- Cardiology ---
-  { id: 'card1', name: 'Dr. Md. Asad Alam', degree: 'MBBS, BCS (Health), CCD (BIRDEM), D-Card (BSMMU)', specialty: 'Cardiology', districts: ['Nilphamari'], clinics: ['c-greensign'], schedule: 'Daily: 3 PM - 9 PM', availableToday: true, rating: 4.9, image: 'https://picsum.photos/200/200?doc=card1' },
-  { id: 'card2', name: 'Dr. Md. Mehfuz Ali', degree: 'MBBS, BCS (Health), FCPS (Medicine), D-Card', specialty: 'Cardiology', districts: ['Nilphamari'], clinics: ['c-greensign'], schedule: 'Sat-Thu: 3 PM - 10 PM', availableToday: true, rating: 4.8, image: 'https://picsum.photos/200/200?doc=card2' },
+  { id: 'card1', name: 'Dr. Md. Asad Alam', degree: 'MBBS, BCS (Health), CCD (BIRDEM), D-Card (BSMMU)', specialty: 'Cardiology', districts: ['Nilphamari'], clinics: ['c-greensign'], schedule: 'Daily: 3 PM - 9 PM', availableToday: true, rating: 4.9, image: 'https://picsum.photos/200/200?doc=card1', consultationFee: 600 },
+  { id: 'card2', name: 'Dr. Md. Mehfuz Ali', degree: 'MBBS, BCS (Health), FCPS (Medicine), D-Card', specialty: 'Cardiology', districts: ['Nilphamari'], clinics: ['c-greensign'], schedule: 'Sat-Thu: 3 PM - 10 PM', availableToday: true, rating: 4.8, image: 'https://picsum.photos/200/200?doc=card2', consultationFee: 600 },
 
   // --- Neuromedicine ---
-  { id: 'neuro1', name: 'Dr. Md. Asaduzzaman (Asad)', degree: 'MBBS, BCS (Health), FCPS (Medicine), MD (Neurology)', specialty: 'Neuromedicine', districts: ['Nilphamari'], clinics: ['c-greensign'], schedule: 'Fri: 10 AM - 8 PM', availableToday: false, rating: 4.9, image: 'https://picsum.photos/200/200?doc=neuro1' },
-  { id: 'neuro2', name: 'Dr. Md. Kaikobad Hossain', degree: 'MBBS, BCS, FCPS, MD (Neurology)', specialty: 'Neuromedicine', districts: ['Nilphamari'], clinics: ['c-madina'], schedule: 'Mon-Wed: 3 PM - 8 PM', availableToday: true, rating: 4.9, image: 'https://picsum.photos/200/200?doc=neuro2' },
+  { id: 'neuro1', name: 'Dr. Md. Asaduzzaman (Asad)', degree: 'MBBS, BCS (Health), FCPS (Medicine), MD (Neurology)', specialty: 'Neuromedicine', districts: ['Nilphamari'], clinics: ['c-greensign'], schedule: 'Fri: 10 AM - 8 PM', availableToday: false, rating: 4.9, image: 'https://picsum.photos/200/200?doc=neuro1', consultationFee: 800 },
+  { id: 'neuro2', name: 'Dr. Md. Kaikobad Hossain', degree: 'MBBS, BCS, FCPS, MD (Neurology)', specialty: 'Neuromedicine', districts: ['Nilphamari'], clinics: ['c-madina'], schedule: 'Mon-Wed: 3 PM - 8 PM', availableToday: true, rating: 4.9, image: 'https://picsum.photos/200/200?doc=neuro2', consultationFee: 800 },
 
   // --- Gynecology ---
-  { id: 'gyn1', name: 'Dr. Obaida Nasnin (Mukta)', degree: 'MBBS, BCS (Health), DGO (DMC)', specialty: 'Gynecology', districts: ['Nilphamari'], clinics: ['c-greensign'], schedule: 'Daily: 4 PM - 9 PM', availableToday: true, rating: 4.9, image: 'https://picsum.photos/200/200?doc=gyn1' },
-  { id: 'gyn2', name: 'Dr. Rumana Afroz', degree: 'MBBS, PGT, EOCT, DMU, CCD, MPH', specialty: 'Gynecology', districts: ['Nilphamari'], clinics: ['c-greensign'], schedule: 'Sat-Thu: 4 PM-10 PM', availableToday: true, rating: 4.9, image: 'https://picsum.photos/200/200?doc=gyn2' },
-  { id: 'gyn3', name: 'Dr. Shahnaz Begum', degree: 'MBBS, FCPS, MS (Gynae)', specialty: 'Gynecology', districts: ['Nilphamari'], clinics: ['c-ar'], schedule: 'Daily: 10 AM - 2 PM', availableToday: true, rating: 4.8, image: 'https://picsum.photos/200/200?doc=gyn3' },
+  { id: 'gyn1', name: 'Dr. Obaida Nasnin (Mukta)', degree: 'MBBS, BCS (Health), DGO (DMC)', specialty: 'Gynecology', districts: ['Nilphamari'], clinics: ['c-greensign'], schedule: 'Daily: 4 PM - 9 PM', availableToday: true, rating: 4.9, image: 'https://picsum.photos/200/200?doc=gyn1', consultationFee: 500 },
+  { id: 'gyn2', name: 'Dr. Rumana Afroz', degree: 'MBBS, PGT, EOCT, DMU, CCD, MPH', specialty: 'Gynecology', districts: ['Nilphamari'], clinics: ['c-greensign'], schedule: 'Sat-Thu: 4 PM-10 PM', availableToday: true, rating: 4.9, image: 'https://picsum.photos/200/200?doc=gyn2', consultationFee: 500 },
+  { id: 'gyn3', name: 'Dr. Shahnaz Begum', degree: 'MBBS, FCPS, MS (Gynae)', specialty: 'Gynecology', districts: ['Nilphamari'], clinics: ['c-ar'], schedule: 'Daily: 10 AM - 2 PM', availableToday: true, rating: 4.8, image: 'https://picsum.photos/200/200?doc=gyn3', consultationFee: 600 },
 
   // --- Orthopedics ---
-  { id: 'orth2', name: 'Dr. Md. Golam Sarwar', degree: 'MBBS, BCS (Health), FCPS (Ortho)', specialty: 'Orthopedics', districts: ['Nilphamari'], clinics: ['c-madina'], schedule: 'Sun, Tue, Thu: 4 PM - 8 PM', availableToday: false, rating: 4.8, image: 'https://picsum.photos/200/200?doc=orth2' },
-  { id: 'orth3', name: 'Dr. Md. Zakir Hossain', degree: 'MBBS, MS (Orthopedics)', specialty: 'Orthopedics', districts: ['Nilphamari'], clinics: ['c-ibadat'], schedule: 'Daily: 5 PM - 9 PM', availableToday: true, rating: 4.7, image: 'https://picsum.photos/200/200?doc=orth3' },
+  { id: 'orth2', name: 'Dr. Md. Golam Sarwar', degree: 'MBBS, BCS (Health), FCPS (Ortho)', specialty: 'Orthopedics', districts: ['Nilphamari'], clinics: ['c-madina'], schedule: 'Sun, Tue, Thu: 4 PM - 8 PM', availableToday: false, rating: 4.8, image: 'https://picsum.photos/200/200?doc=orth2', consultationFee: 600 },
+  { id: 'orth3', name: 'Dr. Md. Zakir Hossain', degree: 'MBBS, MS (Orthopedics)', specialty: 'Orthopedics', districts: ['Nilphamari'], clinics: ['c-ibadat'], schedule: 'Daily: 5 PM - 9 PM', availableToday: true, rating: 4.7, image: 'https://picsum.photos/200/200?doc=orth3', consultationFee: 600 },
 
   // --- Pediatrics ---
-  { id: 'ped1', name: 'Dr. Shah Md. Moazzem', degree: 'MBBS, DCH (Child), BCS', specialty: 'Pediatrics', districts: ['Nilphamari'], clinics: ['c-greensign'], schedule: 'Daily: 3 PM - 10 PM', availableToday: true, rating: 4.9, image: 'https://picsum.photos/200/200?doc=ped1' },
+  { id: 'ped1', name: 'Dr. Shah Md. Moazzem', degree: 'MBBS, DCH (Child), BCS', specialty: 'Pediatrics', districts: ['Nilphamari'], clinics: ['c-greensign'], schedule: 'Daily: 3 PM - 10 PM', availableToday: true, rating: 4.9, image: 'https://picsum.photos/200/200?doc=ped1', consultationFee: 500 },
 
   // --- Surgery ---
-  { id: 'sur1', name: 'Dr. Md. Emdadul Haque', degree: 'MBBS, FCPS (Surgery)', specialty: 'Surgery', districts: ['Nilphamari'], clinics: ['c-greensign'], schedule: 'Daily: 4 PM - 9 PM', availableToday: true, rating: 4.8, image: 'https://picsum.photos/200/200?doc=sur1' },
-  { id: 'sur2', name: 'Dr. Md. Zahidul Islam', degree: 'MBBS, MS (Surgery)', specialty: 'Surgery', districts: ['Nilphamari'], clinics: ['c-ibadat'], schedule: 'Daily: 5 PM - 9 PM', availableToday: true, rating: 4.8, image: 'https://picsum.photos/200/200?doc=sur2' },
+  { id: 'sur1', name: 'Dr. Md. Emdadul Haque', degree: 'MBBS, FCPS (Surgery)', specialty: 'Surgery', districts: ['Nilphamari'], clinics: ['c-greensign'], schedule: 'Daily: 4 PM - 9 PM', availableToday: true, rating: 4.8, image: 'https://picsum.photos/200/200?doc=sur1', consultationFee: 700 },
+  { id: 'sur2', name: 'Dr. Md. Zahidul Islam', degree: 'MBBS, MS (Surgery)', specialty: 'Surgery', districts: ['Nilphamari'], clinics: ['c-ibadat'], schedule: 'Daily: 5 PM - 9 PM', availableToday: true, rating: 4.8, image: 'https://picsum.photos/200/200?doc=sur2', consultationFee: 700 },
 
   // --- Urology ---
-  { id: 'uro2', name: 'Dr. Md. Nuruzzaman Mia', degree: 'MBBS, BCS (Health), MS (Urology)', specialty: 'Urology', districts: ['Nilphamari'], clinics: ['c-madina'], schedule: 'Daily: 4 PM - 9 PM', availableToday: true, rating: 4.7, image: 'https://picsum.photos/200/200?doc=uro2' },
+  { id: 'uro2', name: 'Dr. Md. Nuruzzaman Mia', degree: 'MBBS, BCS (Health), MS (Urology)', specialty: 'Urology', districts: ['Nilphamari'], clinics: ['c-madina'], schedule: 'Daily: 4 PM - 9 PM', availableToday: true, rating: 4.7, image: 'https://picsum.photos/200/200?doc=uro2', consultationFee: 800 },
 
   // --- Endocrinology ---
-  { id: 'end2', name: 'Dr. Ahmed Tanvir', degree: 'MBBS, MD (Endocrinology)', specialty: 'Endocrinology', districts: ['Nilphamari'], clinics: ['c-madina'], schedule: 'Fri: 3 PM - 9 PM', availableToday: false, rating: 4.9, image: 'https://picsum.photos/200/200?doc=end2' },
+  { id: 'end2', name: 'Dr. Ahmed Tanvir', degree: 'MBBS, MD (Endocrinology)', specialty: 'Endocrinology', districts: ['Nilphamari'], clinics: ['c-madina'], schedule: 'Fri: 3 PM - 9 PM', availableToday: false, rating: 4.9, image: 'https://picsum.photos/200/200?doc=end2', consultationFee: 800 },
 
   // --- ENT ---
-  { id: 'ent2', name: 'Dr. Md. Rashedul Islam', degree: 'MBBS, DLO (ENT)', specialty: 'ENT', districts: ['Nilphamari'], clinics: ['c-ar'], schedule: 'Sat-Thu: 5 PM - 9 PM', availableToday: true, rating: 4.8, image: 'https://picsum.photos/200/200?doc=ent2' },
+  { id: 'ent2', name: 'Dr. Md. Rashedul Islam', degree: 'MBBS, DLO (ENT)', specialty: 'ENT', districts: ['Nilphamari'], clinics: ['c-ar'], schedule: 'Sat-Thu: 5 PM - 9 PM', availableToday: true, rating: 4.8, image: 'https://picsum.photos/200/200?doc=ent2', consultationFee: 500 },
 
   // --- Dermatology ---
-  { id: 'derm1', name: 'Dr. Fahim Kiswar', degree: 'MBBS, DDV, CCD, FCPS', specialty: 'Dermatology', districts: ['Nilphamari'], clinics: ['c-ar'], schedule: 'Fri: 3 PM - 9 PM', availableToday: false, rating: 4.8, image: 'https://picsum.photos/200/200?doc=derm1' },
-  { id: 'derm2', name: 'Dr. Md. Nurul Islam', degree: 'MBBS, DDV (Skin)', specialty: 'Dermatology', districts: ['Nilphamari'], clinics: ['c-ibadat'], schedule: 'Daily: 5 PM - 9 PM', availableToday: true, rating: 4.7, image: 'https://picsum.photos/200/200?doc=derm2' },
+  { id: 'derm1', name: 'Dr. Fahim Kiswar', degree: 'MBBS, DDV, CCD, FCPS', specialty: 'Dermatology', districts: ['Nilphamari'], clinics: ['c-ar'], schedule: 'Fri: 3 PM - 9 PM', availableToday: false, rating: 4.8, image: 'https://picsum.photos/200/200?doc=derm1', consultationFee: 600 },
+  { id: 'derm2', name: 'Dr. Md. Nurul Islam', degree: 'MBBS, DDV (Skin)', specialty: 'Dermatology', districts: ['Nilphamari'], clinics: ['c-ibadat'], schedule: 'Daily: 5 PM - 9 PM', availableToday: true, rating: 4.7, image: 'https://picsum.photos/200/200?doc=derm2', consultationFee: 600 },
 
   // --- Ophthalmology ---
-  { id: 'eye2', name: 'Dr. S. M. Nazmul Haque', degree: 'MBBS, DO (Eye)', specialty: 'Ophthalmology', districts: ['Nilphamari'], clinics: ['c-madina'], schedule: 'Sun-Thu: 5 PM - 9 PM', availableToday: true, rating: 4.7, image: 'https://picsum.photos/200/200?doc=eye2' },
+  { id: 'eye2', name: 'Dr. S. M. Nazmul Haque', degree: 'MBBS, DO (Eye)', specialty: 'Ophthalmology', districts: ['Nilphamari'], clinics: ['c-madina'], schedule: 'Sun-Thu: 5 PM - 9 PM', availableToday: true, rating: 4.7, image: 'https://picsum.photos/200/200?doc=eye2', consultationFee: 500 },
 
   // --- Psychiatry ---
-  { id: 'psy2', name: 'Dr. Md. Enamul Hoque', degree: 'MBBS, MD (Psychiatry)', specialty: 'Psychiatry', districts: ['Nilphamari'], clinics: ['c-madina'], schedule: 'Daily: 6 PM - 9 PM', availableToday: true, rating: 4.8, image: 'https://picsum.photos/200/200?doc=psy2' },
+  { id: 'psy2', name: 'Dr. Md. Enamul Hoque', degree: 'MBBS, MD (Psychiatry)', specialty: 'Psychiatry', districts: ['Nilphamari'], clinics: ['c-madina'], schedule: 'Daily: 6 PM - 9 PM', availableToday: true, rating: 4.8, image: 'https://picsum.photos/200/200?doc=psy2', consultationFee: 1000 },
 
   // --- Dentistry ---
-  { id: 'dent2', name: 'Dr. Md. Al-Amin', degree: 'BDS (Dental)', specialty: 'Dentistry', districts: ['Nilphamari'], clinics: ['c-ar'], schedule: 'Daily: 4 PM - 10 PM', availableToday: true, rating: 4.8, image: 'https://picsum.photos/200/200?doc=dent2' },
+  { id: 'dent2', name: 'Dr. Md. Al-Amin', degree: 'BDS (Dental)', specialty: 'Dentistry', districts: ['Nilphamari'], clinics: ['c-ar'], schedule: 'Daily: 4 PM - 10 PM', availableToday: true, rating: 4.8, image: 'https://picsum.photos/200/200?doc=dent2', consultationFee: 400 },
 
   // --- Gastroenterology ---
-  { id: 'gas2', name: 'Dr. Md. Mizanur Rahman', degree: 'MBBS, MD (Hepatology)', specialty: 'Gastroenterology', districts: ['Nilphamari'], clinics: ['c-madina'], schedule: 'Daily: 4 PM - 8 PM', availableToday: true, rating: 4.9, image: 'https://picsum.photos/200/200?doc=gas2' },
+  { id: 'gas2', name: 'Dr. Md. Mizanur Rahman', degree: 'MBBS, MD (Hepatology)', specialty: 'Gastroenterology', districts: ['Nilphamari'], clinics: ['c-madina'], schedule: 'Daily: 4 PM - 8 PM', availableToday: true, rating: 4.9, image: 'https://picsum.photos/200/200?doc=gas2', consultationFee: 800 },
+
+  // --- Live Video Consultants ---
+  { id: 'vdoc1', name: 'Dr. Tanzina Akter', degree: 'MBBS, FCPS (Medicine)', specialty: 'Medicine', districts: ['Dhaka'], clinics: [], schedule: 'Daily: 7 PM - 11 PM', availableToday: true, rating: 4.9, image: 'https://picsum.photos/200/200?doc=vdoc1', isVideoConsultant: true, consultationFee: 500 },
+  { id: 'vdoc2', name: 'Dr. Kamrul Hasan', degree: 'MBBS, MD (Cardiology)', specialty: 'Cardiology', districts: ['Dhaka'], clinics: [], schedule: 'Daily: 8 PM - 10 PM', availableToday: true, rating: 4.8, image: 'https://picsum.photos/200/200?doc=vdoc2', isVideoConsultant: true, consultationFee: 800 },
+  { id: 'vdoc3', name: 'Dr. Nusrat Jahan', degree: 'MBBS, MS (Gynae)', specialty: 'Gynecology', districts: ['Dhaka'], clinics: [], schedule: 'Daily: 6 PM - 9 PM', availableToday: true, rating: 4.9, image: 'https://picsum.photos/200/200?doc=vdoc3', isVideoConsultant: true, consultationFee: 600 },
+  { id: 'vdoc4', name: 'Dr. Arifur Rahman', degree: 'MBBS, DCH (Child)', specialty: 'Pediatrics', districts: ['Dhaka'], clinics: [], schedule: 'Daily: 7 PM - 10 PM', availableToday: true, rating: 4.7, image: 'https://picsum.photos/200/200?doc=vdoc4', isVideoConsultant: true, consultationFee: 500 },
+  { id: 'vdoc5', name: 'Dr. Saima Islam', degree: 'MBBS, DDV (Skin)', specialty: 'Dermatology', districts: ['Dhaka'], clinics: [], schedule: 'Daily: 8 PM - 11 PM', availableToday: true, rating: 4.8, image: 'https://picsum.photos/200/200?doc=vdoc5', isVideoConsultant: true, consultationFee: 700 },
 ];
 
 export const EMERGENCY_SERVICES = [

@@ -29,6 +29,8 @@ export interface Doctor {
   availableToday: boolean;
   rating: number;
   image: string;
+  isVideoConsultant?: boolean;
+  consultationFee?: number;
 }
 
 export interface Clinic {
@@ -64,6 +66,7 @@ export interface Order {
   amount: number;
   shipping: number;
   payment_method: string;
+  payment_type?: 'online' | 'offline';
   sender_name: string;
   sender_contact: string;
   trx_id: string;

@@ -1,5 +1,5 @@
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.7';
+import { createClient } from '@supabase/supabase-js';
 
 // Using the provided credentials for the 'jagad-roy' Supabase project
 const supabaseUrl = 'https://xqkihodpmqawnfctvhki.supabase.co';
