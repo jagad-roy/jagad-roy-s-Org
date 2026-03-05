@@ -4,6 +4,7 @@ import { UserRole, Doctor, Clinic, Medicine, Order, Profile, Prescription, LabTe
 import { DOCTORS, CLINICS, MEDICINES, EMERGENCY_SERVICES, DISTRICTS, LAB_TESTS, SPECIALTIES } from './constants';
 import { gemini } from './services/geminiService';
 import { supabase } from './services/supabaseClient';
+import { Share2 } from 'lucide-react';
 
 // --- UI Components ---
 
@@ -131,6 +132,23 @@ export default function App() {
   const [editingItem, setEditingItem] = useState<any>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [tempImage, setTempImage] = useState<string | null>(null);
+
+  const handleShare = async () => {
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: 'JB Healthcare',
+          text: 'জেবি হেলথকেয়ার - আপনার ডিজিটাল ডাক্তার। স্বাস্থ্যসেবা এখন আপনার হাতের মুঠোয়।',
+          url: window.location.origin,
+        });
+      } else {
+        await navigator.clipboard.writeText(window.location.origin);
+        alert('অ্যাপ লিঙ্ক কপি করা হয়েছে!');
+      }
+    } catch (err) {
+      console.error('Sharing failed', err);
+    }
+  };
 
   const PAYMENT_NUMBERS = { bkash: '01518395772', nagad: '01846800973' };
 
@@ -435,7 +453,10 @@ export default function App() {
         <h1 className="text-xl font-black text-slate-800 tracking-tight cursor-pointer" onClick={() => { setActiveTab('home'); setHomeSubCategory('doctors'); setSelectedHospitalId(null); setSelectedSpecialty(null); }}>
           <span className="text-blue-600">JB</span> Healthcare
         </h1>
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
+           <button onClick={handleShare} className="w-9 h-9 bg-slate-100 rounded-full flex items-center justify-center text-slate-600 border-2 border-slate-50 active:scale-90 transition-all" title="Share App">
+             <Share2 size={16} />
+           </button>
            {user ? (
              <button onClick={logout} className="w-9 h-9 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-[11px] font-black border-2 border-blue-50">
                {profile?.full_name?.[0].toUpperCase() || '👤'}
@@ -835,6 +856,9 @@ export default function App() {
 
             {historyTab === 'info' && (
                <div className="space-y-4 pt-4">
+                  <Button onClick={handleShare} variant="primary" className="w-full py-4 rounded-[28px] flex items-center justify-center gap-3">
+                    <Share2 size={20} /> অ্যাপটি শেয়ার করুন (Share App)
+                  </Button>
                   <Button onClick={() => window.open('https://wa.me/8801518395772', '_blank')} variant="success" className="w-full py-4 rounded-[28px] flex items-center justify-center gap-3">
                     <span className="text-xl">💬</span> Contact Support (WhatsApp)
                   </Button>
