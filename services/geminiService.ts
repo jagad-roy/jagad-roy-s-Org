@@ -2,11 +2,12 @@ import { GoogleGenAI, ThinkingLevel } from "@google/genai";
 
 export class GeminiService {
   async consultHealth(query: string) {
-    // Use GEMINI_API_KEY as per guidelines for free tier/default
+    // Use GEMINI_API_KEY as per guidelines
     const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY;
     
     if (!apiKey || apiKey === "undefined" || apiKey === "") {
-      return "দুঃখিত, এআই সার্ভিস কনফিগার করা নেই। অনুগ্রহ করে মডারেটরের সাথে যোগাযোগ করুন।";
+      console.error("Gemini API Key is missing or undefined");
+      return "দুঃখিত, এআই সার্ভিস কানেকশনে সমস্যা হচ্ছে। অনুগ্রহ করে পেজটি রিফ্রেশ করুন অথবা কিছুক্ষণ পর চেষ্টা করুন।";
     }
 
     const ai = new GoogleGenAI({ apiKey });
