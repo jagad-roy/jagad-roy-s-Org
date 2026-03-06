@@ -5,7 +5,7 @@ export class GeminiService {
     // Use GEMINI_API_KEY as per guidelines for free tier/default
     const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY;
     
-    if (!apiKey) {
+    if (!apiKey || apiKey === "undefined" || apiKey === "") {
       return "দুঃখিত, এআই সার্ভিস কনফিগার করা নেই। অনুগ্রহ করে মডারেটরের সাথে যোগাযোগ করুন।";
     }
 
