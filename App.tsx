@@ -97,10 +97,12 @@ const AIDoctor: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const handleConsult = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!query.trim()) return;
+    const currentQuery = query;
+    setQuery(''); // Clear input immediately for better UX
     setIsThinking(true);
     setResponse('');
-    const res = await gemini.consultHealth(query);
-    setResponse(res);
+    const res = await gemini.consultHealth(currentQuery);
+    setResponse(res || "দুঃখিত, কোনো উত্তর পাওয়া যায়নি। আবার চেষ্টা করুন।");
     setIsThinking(false);
   };
 
