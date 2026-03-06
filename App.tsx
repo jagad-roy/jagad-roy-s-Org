@@ -4,7 +4,8 @@ import { UserRole, Doctor, Clinic, Medicine, Order, Profile, Prescription, LabTe
 import { DOCTORS, CLINICS, MEDICINES, EMERGENCY_SERVICES, DISTRICTS, LAB_TESTS, SPECIALTIES } from './constants';
 import { gemini } from './services/geminiService';
 import { supabase } from './services/supabaseClient';
-import { Share2 } from 'lucide-react';
+import { Share2, Bot, Video, Microscope, Ambulance, Star, ShieldCheck, Zap, MessageSquare, ArrowRight, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 
 // --- UI Components ---
 
@@ -85,9 +86,255 @@ const Input: React.FC<{
   </div>
 );
 
+// --- AI Doctor Component ---
+
+const AIDoctor: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+  const [query, setQuery] = useState('');
+  const [response, setResponse] = useState('');
+  const [isThinking, setIsThinking] = useState(false);
+  const chatEndRef = useRef<HTMLDivElement>(null);
+
+  const handleConsult = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!query.trim()) return;
+    setIsThinking(true);
+    setResponse('');
+    const res = await gemini.consultHealth(query);
+    setResponse(res);
+    setIsThinking(false);
+  };
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [response, isThinking]);
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 100 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 100 }}
+      className="fixed inset-0 z-[150] bg-white flex flex-col"
+    >
+      <header className="px-6 py-4 border-b flex justify-between items-center bg-blue-600 text-white">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+            <Bot size={24} />
+          </div>
+          <div>
+            <h2 className="text-sm font-black uppercase tracking-widest">AI Doctor</h2>
+            <p className="text-[8px] opacity-70 font-bold uppercase">Powered by Gemini AI</p>
+          </div>
+        </div>
+        <button onClick={onClose} className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center">
+          <X size={20} />
+        </button>
+      </header>
+
+      <div className="flex-1 overflow-y-auto p-6 space-y-6 no-scrollbar">
+        <div className="bg-slate-100 p-4 rounded-2xl rounded-tl-none max-w-[85%]">
+          <p className="text-xs font-bold text-slate-700 leading-relaxed">
+            আসসালামু আলাইকুম! আমি জেবি হেলথকেয়ারের এআই ডাক্তার। আপনার কি কোনো স্বাস্থ্য সমস্যা আছে? আমাকে বিস্তারিত বলুন।
+          </p>
+        </div>
+
+        {query && (
+          <div className="bg-blue-600 p-4 rounded-2xl rounded-tr-none max-w-[85%] ml-auto text-white">
+            <p className="text-xs font-bold leading-relaxed">{query}</p>
+          </div>
+        )}
+
+        {isThinking && (
+          <div className="bg-slate-100 p-4 rounded-2xl rounded-tl-none max-w-[85%] flex items-center gap-2">
+            <div className="flex gap-1">
+              <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce"></div>
+              <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce delay-75"></div>
+              <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce delay-150"></div>
+            </div>
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Thinking...</span>
+          </div>
+        )}
+
+        {response && (
+          <div className="bg-slate-100 p-5 rounded-2xl rounded-tl-none max-w-[95%] border border-blue-100 shadow-sm">
+            <div className="prose prose-sm max-w-none text-slate-700 text-xs font-medium leading-relaxed whitespace-pre-line">
+              {response}
+            </div>
+          </div>
+        )}
+        <div ref={chatEndRef} />
+      </div>
+
+      <div className="p-6 border-t bg-slate-50">
+        <form onSubmit={handleConsult} className="flex gap-3">
+          <input 
+            type="text" 
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="আপনার সমস্যার কথা লিখুন..."
+            className="flex-1 bg-white border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-bold outline-none focus:border-blue-600 transition-all"
+          />
+          <button 
+            type="submit" 
+            disabled={isThinking || !query.trim()}
+            className="w-14 h-14 bg-blue-600 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/20 active:scale-90 transition-all disabled:opacity-50"
+          >
+            <Zap size={24} fill="currentColor" />
+          </button>
+        </form>
+        <p className="text-[8px] text-slate-400 text-center mt-4 font-bold uppercase tracking-widest">
+          সতর্কবার্তা: এটি একটি এআই পরামর্শ, সরাসরি ডাক্তারের বিকল্প নয়।
+        </p>
+      </div>
+    </motion.div>
+  );
+};
+
+// --- Landing Page Component ---
+
+const LandingPage: React.FC<{ onStart: () => void }> = ({ onStart }) => {
+  return (
+    <div className="fixed inset-0 z-[200] bg-white overflow-y-auto no-scrollbar">
+      {/* Hero Section */}
+      <section className="relative h-[80vh] flex flex-col items-center justify-center px-8 text-center bg-gradient-to-b from-blue-50 to-white overflow-hidden">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="absolute top-20 w-64 h-64 bg-blue-600/10 rounded-full blur-3xl"
+        />
+        
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="z-10 space-y-6"
+        >
+          <div className="inline-flex items-center gap-2 bg-blue-600/10 text-blue-600 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest">
+            <Zap size={14} fill="currentColor" /> Digital Healthcare Solution
+          </div>
+          
+          <h1 className="text-5xl font-black text-slate-900 leading-[1.1] tracking-tighter">
+            আপনার হাতের মুঠোয় <br />
+            <span className="text-blue-600">ডিজিটাল ডাক্তার</span>
+          </h1>
+          
+          <p className="text-slate-500 text-sm font-medium leading-relaxed max-w-xs mx-auto">
+            জেবি হেলথকেয়ারে আপনি পাচ্ছেন এআই ডাক্তার পরামর্শ, ভিডিও কনসাল্টেশন এবং জরুরি স্বাস্থ্যসেবা।
+          </p>
+          
+          <div className="pt-8">
+            <button 
+              onClick={onStart}
+              className="bg-blue-600 text-white px-10 py-5 rounded-[32px] font-black text-sm uppercase tracking-widest shadow-2xl shadow-blue-500/40 active:scale-95 transition-all flex items-center gap-3 mx-auto"
+            >
+              শুরু করুন <ArrowRight size={20} />
+            </button>
+          </div>
+        </motion.div>
+
+        <motion.div 
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="absolute bottom-0 w-full px-6"
+        >
+          <div className="bg-white rounded-t-[40px] shadow-2xl border-x border-t border-slate-100 p-8 flex justify-around items-center">
+            <div className="text-center">
+              <p className="text-2xl font-black text-slate-800">৫০০০+</p>
+              <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">পরামর্শ</p>
+            </div>
+            <div className="w-px h-8 bg-slate-100" />
+            <div className="text-center">
+              <p className="text-2xl font-black text-slate-800">৫০+</p>
+              <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">বিশেষজ্ঞ</p>
+            </div>
+            <div className="w-px h-8 bg-slate-100" />
+            <div className="text-center">
+              <p className="text-2xl font-black text-slate-800">৪.৯/৫</p>
+              <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">রেটিং</p>
+            </div>
+          </div>
+        </motion.div>
+      </section>
+
+      {/* Features Section */}
+      <section className="px-8 py-20 space-y-12 bg-white">
+        <div className="text-center space-y-2">
+          <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight">আমাদের সেবাসমূহ</h2>
+          <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">কেন আমাদের বেছে নেবেন?</p>
+        </div>
+
+        <div className="grid grid-cols-1 gap-6">
+          {[
+            { icon: <Bot className="text-blue-600" />, title: "AI ডাক্তার পরামর্শ", desc: "যেকোনো স্বাস্থ্য সমস্যায় তাৎক্ষণিক এআই পরামর্শ নিন।" },
+            { icon: <Video className="text-emerald-600" />, title: "ভিডিও কনসাল্টেশন", desc: "দেশের সেরা বিশেষজ্ঞ ডাক্তারদের সাথে সরাসরি কথা বলুন।" },
+            { icon: <Microscope className="text-indigo-600" />, title: "ল্যাব টেস্ট বুকিং", desc: "ঘরে বসেই ল্যাব টেস্ট বুক করুন এবং রিপোর্ট পান।" },
+            { icon: <Ambulance className="text-red-600" />, title: "জরুরি SOS সেবা", desc: "২৪/৭ জরুরি অ্যাম্বুলেন্স এবং অক্সিজেন সাপোর্ট।" }
+          ].map((f, i) => (
+            <motion.div 
+              key={i}
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1 }}
+              className="flex gap-6 items-center p-6 bg-slate-50 rounded-[32px] border border-slate-100"
+            >
+              <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-sm">
+                {f.icon}
+              </div>
+              <div>
+                <h4 className="font-black text-sm text-slate-800 uppercase tracking-tight">{f.title}</h4>
+                <p className="text-[10px] text-slate-500 font-medium mt-1 leading-relaxed">{f.desc}</p>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
+      {/* Social Proof */}
+      <section className="px-8 py-20 bg-slate-900 text-white rounded-t-[56px]">
+        <div className="text-center space-y-8">
+          <div className="inline-flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest">
+            <Star size={14} fill="currentColor" className="text-yellow-400" /> Trusted by Thousands
+          </div>
+          
+          <h2 className="text-3xl font-black leading-tight tracking-tighter">
+            মানুষ কেন আমাদের <br /> পছন্দ করে?
+          </h2>
+
+          <div className="space-y-6 text-left">
+            {[
+              { name: "রাহাত হোসেন", text: "এআই ডাক্তার ফিচারটি অসাধারণ! অনেক দ্রুত পরামর্শ পাওয়া যায়।" },
+              { name: "সুমাইয়া আক্তার", text: "ভিডিও কনসাল্টেশন করে অনেক উপকৃত হয়েছি। ডাক্তার খুব ভালো ছিলেন।" }
+            ].map((r, i) => (
+              <div key={i} className="bg-white/5 p-6 rounded-[32px] border border-white/10">
+                <p className="text-xs font-medium italic opacity-80 leading-relaxed">"{r.text}"</p>
+                <div className="mt-4 flex items-center gap-3">
+                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-[10px] font-black">{r.name[0]}</div>
+                  <p className="text-[10px] font-black uppercase tracking-widest">{r.name}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="pt-10">
+            <button 
+              onClick={onStart}
+              className="w-full bg-white text-blue-600 py-5 rounded-[32px] font-black text-sm uppercase tracking-widest shadow-xl active:scale-95 transition-all"
+            >
+              এখনই শুরু করুন
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+};
+
 // --- Main App ---
 
 export default function App() {
+  const [showLanding, setShowLanding] = useState(true);
+  const [showAIDoctor, setShowAIDoctor] = useState(false);
   const [activeTab, setActiveTab] = useState('home');
   const [homeSubCategory, setHomeSubCategory] = useState<'doctors' | 'hospitals' | 'labtests' | 'emergency'>('doctors');
   const [user, setUser] = useState<any>(null);
@@ -176,6 +423,10 @@ export default function App() {
       setIsLoading(false);
     };
     init();
+    
+    // Check if landing has been seen
+    const hasSeenLanding = sessionStorage.getItem('jb_landing_seen');
+    if (hasSeenLanding) setShowLanding(false);
   }, []);
 
   const fetchData = async () => {
@@ -442,6 +693,21 @@ export default function App() {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col max-w-lg mx-auto relative overflow-hidden shadow-2xl">
       
+      <AnimatePresence>
+        {showLanding && (
+          <LandingPage onStart={() => {
+            setShowLanding(false);
+            sessionStorage.setItem('jb_landing_seen', 'true');
+          }} />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showAIDoctor && (
+          <AIDoctor onClose={() => setShowAIDoctor(false)} />
+        )}
+      </AnimatePresence>
+
       {/* Ticker */}
       <div className="bg-red-600 text-white py-2 overflow-hidden whitespace-nowrap z-50 shadow-md">
         <div className="animate-marquee inline-block pl-[100%] font-black text-[10px] uppercase tracking-wider">
@@ -494,6 +760,28 @@ export default function App() {
                  </button>
                ))}
             </div>
+
+            {/* AI Doctor Banner */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-slate-900 rounded-[32px] p-6 text-white relative overflow-hidden group cursor-pointer"
+              onClick={() => setShowAIDoctor(true)}
+            >
+              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/20 rounded-full blur-3xl group-hover:bg-blue-600/40 transition-all duration-500" />
+              <div className="relative z-10 flex items-center justify-between">
+                <div className="space-y-2">
+                  <div className="inline-flex items-center gap-2 bg-blue-600 px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest">
+                    <Zap size={10} fill="currentColor" /> New Feature
+                  </div>
+                  <h3 className="text-lg font-black tracking-tight">AI ডাক্তারের পরামর্শ নিন</h3>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">তাৎক্ষণিক স্বাস্থ্য সমাধান</p>
+                </div>
+                <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center border border-white/10 group-hover:scale-110 transition-transform">
+                  <Bot size={32} className="text-blue-400" />
+                </div>
+              </div>
+            </motion.div>
 
             <div className="space-y-6">
                <div className="flex justify-between items-center bg-slate-100/50 p-2 rounded-2xl">
