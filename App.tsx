@@ -412,7 +412,22 @@ export default function App() {
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
           setUser(session.user);
-          const { data: prof } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
+          let { data: prof } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
+          
+          if (!prof) {
+            // Create profile if missing (using metadata)
+            const newProf = {
+              id: session.user.id,
+              full_name: session.user.user_metadata?.full_name || 'User',
+              phone: session.user.user_metadata?.phone || '',
+              role: UserRole.PATIENT,
+              status: 'active'
+            };
+            const { data: createdProf, error: insErr } = await supabase.from('profiles').insert(newProf).select().single();
+            if (!insErr) prof = createdProf;
+            else prof = newProf as any;
+          }
+          
           if (prof) setProfile(prof);
         }
       }
@@ -493,7 +508,24 @@ export default function App() {
       } else if (authMode === 'login') {
         const { data, error } = await supabase.auth.signInWithPassword({ email: emailVal, password: passVal });
         if (error) throw error;
-        const { data: prof } = await supabase.from('profiles').select('*').eq('id', data.user.id).single();
+        
+        // Ensure profile exists
+        let { data: prof } = await supabase.from('profiles').select('*').eq('id', data.user.id).single();
+        
+        if (!prof) {
+          // Create profile if missing
+          const newProf = {
+            id: data.user.id,
+            full_name: data.user.user_metadata?.full_name || 'User',
+            phone: data.user.user_metadata?.phone || '',
+            role: UserRole.PATIENT,
+            status: 'active'
+          };
+          const { data: createdProf, error: insErr } = await supabase.from('profiles').insert(newProf).select().single();
+          if (!insErr) prof = createdProf;
+          else prof = newProf as any;
+        }
+
         if (prof?.status === 'pending') {
           await supabase.auth.signOut();
           throw new Error('অ্যাকাউন্টটি পেন্ডিং।');
@@ -504,17 +536,67 @@ export default function App() {
       } else {
         const fullName = formData.get('fullName') as string;
         const phone = formData.get('phone') as string;
-        const { data, error } = await supabase.auth.signUp({ email: emailVal, password: passVal });
-        if (error) throw error;
+        
+        if (!fullName || !phone || !emailVal || !passVal) {
+          throw new Error('দয়া করে সব তথ্য পূরণ করুন!');
+        }
+        
+        if (!emailVal.includes('@') || !emailVal.includes('.')) {
+          throw new Error('সঠিক ইমেইল অ্যাড্রেস দিন!');
+        }
+        
+        if (passVal.length < 6) {
+          throw new Error('পাসওয়ার্ড অন্তত ৬ অক্ষরের হতে হবে!');
+        }
+
+        const { data, error } = await supabase.auth.signUp({ 
+          email: emailVal, 
+          password: passVal,
+          options: {
+            data: {
+              full_name: fullName,
+              phone: phone
+            }
+          }
+        });
+        
+        if (error) {
+          if (error.message.includes('User already registered')) {
+            throw new Error('এই ইমেইল দিয়ে ইতিমধ্যে অ্যাকাউন্ট খোলা হয়েছে!');
+          }
+          throw error;
+        }
+        
         if (data.user) {
-          const newProf = { id: data.user.id, full_name: fullName, phone, role: UserRole.PATIENT, status: 'active' };
-          await supabase.from('profiles').insert(newProf);
-          setUser(data.user);
-          setProfile(newProf as any);
-          setShowAuthModal(false);
+          const newProf = { 
+            id: data.user.id, 
+            full_name: fullName, 
+            phone, 
+            role: UserRole.PATIENT, 
+            status: 'active' 
+          };
+          
+          // Try to insert profile, but don't block if it fails (might be RLS issue if session is null)
+          const { error: profileError } = await supabase.from('profiles').insert(newProf);
+          
+          if (profileError) {
+            console.error("Profile Insert Error during signup:", profileError);
+          }
+
+          if (data.session) {
+            setUser(data.user);
+            setProfile(newProf as any);
+            setShowAuthModal(false);
+          } else {
+            alert('রেজিস্ট্রেশন সফল হয়েছে! দয়া করে আপনার ইমেইল চেক করুন এবং অ্যাকাউন্টটি ভেরিফাই করুন।');
+            setShowAuthModal(false);
+          }
         }
       }
-    } catch (err: any) { alert(err.message); }
+    } catch (err: any) { 
+      console.error("Auth Error:", err);
+      alert(err.message || 'একটি সমস্যা হয়েছে। আবার চেষ্টা করুন।'); 
+    }
     finally { setIsProcessing(false); }
   };
 
@@ -1205,7 +1287,7 @@ export default function App() {
               {authMode === 'register' && (
                 <><Input label="Full Name" name="fullName" required /><Input label="Phone Number" name="phone" required /></>
               )}
-              <Input label={authMode === 'moderator' ? "Username" : "Email"} name="email" required />
+              <Input label={authMode === 'moderator' ? "Username" : "Email"} name="email" type={authMode === 'moderator' ? "text" : "email"} required />
               <Input label="Password" name="password" type="password" required />
               <Button type="submit" loading={isProcessing} className="w-full py-4 mt-2 rounded-2xl">Continue</Button>
             </form>
