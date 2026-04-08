@@ -70,6 +70,7 @@ export interface Order {
   sender_name: string;
   sender_contact: string;
   trx_id: string;
+  hospital_name?: string;
   status: 'pending' | 'verified' | 'processing' | 'completed' | 'cancelled';
 }
 

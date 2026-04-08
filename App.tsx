@@ -362,7 +362,7 @@ export default function App() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'register' | 'moderator'>('login');
   const [isProcessing, setIsProcessing] = useState(false);
-  const [showPayment, setShowPayment] = useState<{show: boolean, amount: number, item: string, shipping: number, isVideo?: boolean, isClinic?: boolean}>({show: false, amount: 0, item: '', shipping: 0});
+  const [showPayment, setShowPayment] = useState<{show: boolean, amount: number, item: string, shipping: number, isVideo?: boolean, isClinic?: boolean, hospitalName?: string}>({show: false, amount: 0, item: '', shipping: 0});
   const [paymentMethod, setPaymentMethod] = useState<'bkash' | 'nagad' | null>(null);
   const [paymentType, setPaymentType] = useState<'online' | 'offline'>('online');
   const [trxId, setTrxId] = useState('');
@@ -671,6 +671,7 @@ export default function App() {
       sender_name: profile?.full_name || 'Guest',
       sender_contact: profile?.phone || '',
       trx_id: paymentType === 'offline' ? `OFFLINE-${Math.random().toString(36).substr(2, 6).toUpperCase()}` : trxId,
+      hospital_name: showPayment.hospitalName,
       status: 'pending'
     };
 
@@ -969,7 +970,22 @@ export default function App() {
                                       <span>📹</span> Video
                                     </button>
                                   )}
-                                  <button onClick={() => setShowPayment({show: true, amount: d.consultationFee || 500, item: `Consultation: ${d.name}`, shipping: 0, isClinic: true})} className="text-[10px] bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-black shadow-lg shadow-blue-500/20 active:scale-95 transition-all">সিরিয়াল নিন</button>
+                                  <button 
+                                    onClick={() => {
+                                      const hospital = hospitals.find(h => h.id === selectedHospitalId) || hospitals.find(h => h.id === d.clinics[0]);
+                                      setShowPayment({
+                                        show: true, 
+                                        amount: d.consultationFee || 500, 
+                                        item: `Consultation: ${d.name}`, 
+                                        shipping: 0, 
+                                        isClinic: true,
+                                        hospitalName: hospital?.name
+                                      });
+                                    }} 
+                                    className="text-[10px] bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-black shadow-lg shadow-blue-500/20 active:scale-95 transition-all"
+                                  >
+                                    সিরিয়াল নিন
+                                  </button>
                                 </div>
                              </div>
                            </div>
@@ -1200,6 +1216,7 @@ export default function App() {
                               <Badge status={o.status} />
                            </div>
                            <h4 className="text-[11px] font-black text-slate-800 leading-tight">{o.item_name}</h4>
+                           {o.hospital_name && <p className="text-[9px] font-black text-blue-600 uppercase mt-1">📍 {o.hospital_name}</p>}
                            <p className="text-[10px] text-slate-500 font-bold mt-1">Customer: {o.sender_name} ({o.sender_contact})</p>
                            <p className="text-blue-600 font-black text-xs mt-2">৳{o.amount + o.shipping} • Trx: {o.trx_id}</p>
                         </Card>
@@ -1253,7 +1270,10 @@ export default function App() {
               {allOrders.map(order => (
                 <Card key={order.id} className="border-l-4 border-l-amber-500 flex flex-col gap-2">
                   <div className="flex justify-between items-start">
-                    <p className="text-[12px] font-black text-slate-800 leading-snug max-w-[70%]">{order.item_name}</p>
+                    <div className="flex flex-col gap-1 max-w-[70%]">
+                      <p className="text-[12px] font-black text-slate-800 leading-snug">{order.item_name}</p>
+                      {order.hospital_name && <p className="text-[9px] font-black text-blue-600 uppercase">📍 {order.hospital_name}</p>}
+                    </div>
                     <Badge status={order.status} />
                   </div>
                   <div className="text-[10px] text-slate-500 font-bold flex justify-between bg-slate-50 p-3 rounded-[20px] items-center">
@@ -1440,6 +1460,11 @@ export default function App() {
                  <div className="bg-slate-50 p-6 rounded-[32px] border border-slate-100">
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Service Details:</p>
                     <p className="text-[12px] font-black text-slate-700 leading-relaxed italic">{showPayment.item}</p>
+                    {showPayment.hospitalName && (
+                      <p className="text-[10px] font-black text-blue-600 uppercase mt-2 border-t pt-2 border-slate-200">
+                        📍 {showPayment.hospitalName}
+                      </p>
+                    )}
                  </div>
                  <div className="bg-blue-600 p-8 rounded-[40px] text-white text-center shadow-2xl shadow-blue-500/30">
                     <p className="text-4xl font-black">৳{showPayment.amount + showPayment.shipping}</p>
