@@ -594,8 +594,14 @@ export default function App() {
         }
       }
     } catch (err: any) { 
-      console.error("Auth Error:", err);
-      alert(err.message || 'একটি সমস্যা হয়েছে। আবার চেষ্টা করুন।'); 
+      console.error("Auth Error Detail:", err);
+      let msg = 'একটি সমস্যা হয়েছে। আবার চেষ্টা করুন।';
+      if (err.message === 'Failed to fetch') {
+        msg = 'সার্ভারের সাথে সংযোগ করা যাচ্ছে না। আপনার ইন্টারনেট সংযোগ বা সুপাবেস ইউআরএল চেক করুন।';
+      } else if (err.message) {
+        msg = `এরর: ${err.message}`;
+      }
+      alert(msg); 
     }
     finally { setIsProcessing(false); }
   };
@@ -1325,7 +1331,7 @@ export default function App() {
                   districts: [rawData.district],
                   clinics: [rawData.clinic],
                   schedule: rawData.schedule,
-                  image: tempImage || editingItem?.image || `https://picsum.photos/200/200?doc=${id}`,
+                  image: tempImage || editingItem?.image || `https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&q=80&w=200&sig=${id}`,
                   availableToday: true,
                   rating: editingItem?.rating || 5.0
                 };
@@ -1335,7 +1341,7 @@ export default function App() {
                   name: rawData.name,
                   district: rawData.district,
                   address: rawData.address,
-                  image: tempImage || editingItem?.image || `https://picsum.photos/400/300?hosp=${id}`,
+                  image: tempImage || editingItem?.image || `https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&q=80&w=400&sig=${id}`,
                   doctors: editingItem?.doctors || []
                 };
               } else if (adminDataTab === 'tests') {
@@ -1446,11 +1452,11 @@ export default function App() {
                   {!paymentMethod ? (
                     <div className="grid grid-cols-2 gap-6">
                       <button onClick={() => setPaymentMethod('bkash')} className="p-8 border-2 border-slate-50 rounded-[40px] flex flex-col items-center gap-4 bg-white hover:border-pink-500 hover:shadow-xl transition-all active:scale-95 group">
-                        <img src="https://www.logo.wine/a/logo/BKash/BKash-Logo.wine.svg" className="w-16 h-16 group-hover:scale-110 transition-transform" />
+                        <div className="w-16 h-16 bg-pink-100 rounded-2xl flex items-center justify-center text-pink-600 font-black text-xs">bKash</div>
                         <span className="text-[11px] font-black text-pink-600 uppercase tracking-[0.2em]">Pay bKash</span>
                       </button>
                       <button onClick={() => setPaymentMethod('nagad')} className="p-8 border-2 border-slate-50 rounded-[40px] flex flex-col items-center gap-4 bg-white hover:border-orange-500 hover:shadow-xl transition-all active:scale-95 group">
-                        <img src="https://download.logo.wine/logo/Nagad/Nagad-Logo.wine.png" className="w-16 h-16 group-hover:scale-110 transition-transform" />
+                        <div className="w-16 h-16 bg-orange-100 rounded-2xl flex items-center justify-center text-orange-600 font-black text-xs">Nagad</div>
                         <span className="text-[11px] font-black text-orange-600 uppercase tracking-[0.2em]">Pay Nagad</span>
                       </button>
                     </div>
