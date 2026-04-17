@@ -4,7 +4,7 @@ import { UserRole, Doctor, Clinic, Medicine, Order, Profile, Prescription, LabTe
 import { DOCTORS, CLINICS, MEDICINES, EMERGENCY_SERVICES, DISTRICTS, LAB_TESTS, SPECIALTIES } from './constants';
 import { gemini } from './services/geminiService';
 import { supabase } from './services/supabaseClient';
-import { Share2, Bot, Video, Microscope, Ambulance, Star, ShieldCheck, Zap, MessageSquare, ArrowRight, X } from 'lucide-react';
+import { Share2, Bot, Video, Microscope, Ambulance, Star, ShieldCheck, Zap, MessageSquare, ArrowRight, X, Download, Smartphone } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 // --- UI Components ---
@@ -50,13 +50,247 @@ const Button: React.FC<{
   return (
     <button 
       type={type}
-      onClick={onClick} 
+      onClick={disabled ? undefined : onClick}
       disabled={disabled || loading}
-      className={`px-4 py-3 rounded-xl font-bold text-xs uppercase tracking-wider active:scale-95 transition-all disabled:opacity-50 disabled:active:scale-100 flex items-center justify-center gap-2 ${styles[variant]} ${className}`}
+      className={`px-6 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100 flex items-center justify-center gap-2 ${styles[variant]} ${className}`}
     >
-      {loading && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>}
-      {children}
+      {loading ? (
+        <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }} className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full" />
+      ) : children}
     </button>
+  );
+};
+
+// --- Update Notification for PWA ---
+const UpdatePrompt: React.FC = () => {
+  const [show, setShow] = useState(false);
+
+  useEffect(() => {
+    const handleUpdate = () => setShow(true);
+    window.addEventListener('swUpdateAvailable', handleUpdate);
+    return () => window.removeEventListener('swUpdateAvailable', handleUpdate);
+  }, []);
+
+  if (!show) return null;
+
+  return (
+    <motion.div 
+      initial={{ y: 100, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      className="fixed bottom-24 left-6 right-6 z-[400] bg-slate-900 text-white p-5 rounded-[32px] shadow-2xl flex items-center justify-between gap-4 border border-white/10"
+    >
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 bg-blue-600 rounded-2xl flex items-center justify-center animate-pulse">
+          <Zap size={20} fill="white" />
+        </div>
+        <div>
+          <h4 className="text-[11px] font-black uppercase tracking-widest">নতুন আপডেট উপলব্ধ!</h4>
+          <p className="text-[9px] text-slate-400 font-medium">সেরা পারফরম্যান্সের জন্য অ্যাপটি রিফ্রেশ করুন।</p>
+        </div>
+      </div>
+      <button 
+        onClick={() => window.location.reload()}
+        className="bg-white text-slate-900 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest active:scale-95 transition-all shadow-lg"
+      >
+        রিফ্রেশ করুন
+      </button>
+    </motion.div>
+  );
+};
+
+// --- Floating Download Prompt for Web Version ---
+const DownloadFAB: React.FC = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
+
+  useEffect(() => {
+    // Show toolip after 3 seconds of page load
+    const timer = setTimeout(() => setShowTooltip(true), 3000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <div className="fixed bottom-24 right-6 z-[300]">
+      <AnimatePresence>
+        {(isOpen || showTooltip) && (
+          <motion.div
+            initial={{ opacity: 0, y: 20, scale: 0.9, x: 20 }}
+            animate={{ opacity: 1, y: 0, scale: 1, x: 0 }}
+            exit={{ opacity: 0, y: 20, scale: 0.9, x: 20 }}
+            className="absolute bottom-20 right-0 w-72 bg-white rounded-[32px] shadow-2xl border border-slate-100 p-6 mb-2"
+          >
+            <div className="flex justify-between items-start mb-4">
+              <div className="bg-blue-50 p-3 rounded-2xl">
+                <Smartphone className="text-blue-600" size={24} />
+              </div>
+              <button 
+                onClick={() => { setIsOpen(false); setShowTooltip(false); }}
+                className="p-1 hover:bg-slate-50 rounded-full text-slate-400"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            
+            <h3 className="text-sm font-black text-slate-800 leading-tight mb-2 uppercase tracking-tight">
+              জেবি হেলথকেয়ার অ্যাপ
+            </h3>
+            
+            <p className="text-[10px] text-slate-500 font-medium leading-relaxed mb-5">
+              সব ফিচারের সেরা অভিজ্ঞতার জন্য আমাদের অফিসিয়াল অ্যাপটি আপনার ফোনে ইনস্টল করুন। 
+            </p>
+            
+            <div className="space-y-3">
+              <a 
+                href="/downloads/jb-healthcare.apk" 
+                download
+                onClick={() => { setIsOpen(false); setShowTooltip(false); }}
+                className="w-full bg-blue-600 text-white py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-3 shadow-lg shadow-blue-500/20 active:scale-95 transition-all"
+              >
+                <Download size={16} /> সরাসরি APK ডাউনলোড করুন
+              </a>
+              <div className="flex items-center justify-center gap-2 text-[8px] font-black text-slate-400 uppercase tracking-widest">
+                <ShieldCheck size={10} /> Secure • Android Version v2.0
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <motion.button
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
+        onClick={() => { setIsOpen(!isOpen); setShowTooltip(false); }}
+        className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-700 text-white rounded-full flex items-center justify-center shadow-2xl shadow-blue-500/40 relative active:scale-90 transition-all border-4 border-white"
+      >
+        <Smartphone size={28} />
+        <motion.div
+          animate={{ scale: [1, 1.3, 1], opacity: [0.3, 1, 0.3] }}
+          transition={{ repeat: Infinity, duration: 2.5 }}
+          className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full border-2 border-white flex items-center justify-center shadow-lg"
+        >
+          <span className="w-2 h-2 bg-white rounded-full shadow-inner" />
+        </motion.div>
+      </motion.button>
+    </div>
+  );
+};
+
+// --- Admin Dashboard Component ---
+const AdminDashboard: React.FC<{ profile: Profile, onLogout: () => void, ticker: string, setTicker: (val: string) => void, onUpdateTicker: () => void }> = ({ profile, onLogout, ticker, setTicker, onUpdateTicker }) => {
+  const [activeSubTab, setActiveSubTab] = useState<'overview' | 'doctors' | 'orders' | 'hospitals' | 'labtests'>('overview');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  return (
+    <div className="min-h-screen bg-slate-50 flex flex-col">
+      <header className="bg-slate-900 text-white p-6 shadow-xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/20 rounded-full blur-3xl -mr-10 -mt-10" />
+        <div className="flex justify-between items-center relative z-10">
+          <div>
+            <h1 className="text-xl font-black uppercase tracking-tighter">Admin Panel</h1>
+            <p className="text-[10px] text-blue-400 font-bold uppercase tracking-widest">{profile.full_name}</p>
+          </div>
+          <button onClick={onLogout} className="bg-white/10 p-3 rounded-2xl hover:bg-white/20 transition-all active:scale-90">
+             <X size={20} />
+          </button>
+        </div>
+      </header>
+
+      {/* Admin Navigation */}
+      <div className="bg-white border-b px-6 flex gap-6 overflow-x-auto no-scrollbar">
+        {[
+          { id: 'overview', label: 'Overview', icon: <Zap size={14} /> },
+          { id: 'doctors', label: 'Specialists', icon: <Bot size={14} /> },
+          { id: 'orders', label: 'Booking Orders', icon: <MessageSquare size={14} /> },
+          { id: 'hospitals', label: 'Clinics', icon: <Microscope size={14} /> },
+          { id: 'labtests', label: 'Lab Tests', icon: <Star size={14} /> }
+        ].map(tab => (
+          <button 
+            key={tab.id}
+            onClick={() => setActiveSubTab(tab.id as any)}
+            className={`py-4 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all border-b-4 ${activeSubTab === tab.id ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-400'}`}
+          >
+            {tab.icon} {tab.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="flex-1 p-6 space-y-8">
+        {activeSubTab === 'overview' && (
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4">
+            {/* Quick Stats */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm">
+                 <p className="text-[10px] font-black text-slate-400 uppercase mb-2">Total Specialists</p>
+                 <p className="text-3xl font-black text-slate-800">{DOCTORS.length}</p>
+              </div>
+              <div className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm">
+                 <p className="text-[10px] font-black text-slate-400 uppercase mb-2">Districts</p>
+                 <p className="text-3xl font-black text-slate-800">{DISTRICTS.length}</p>
+              </div>
+            </div>
+
+            {/* Ticker Management */}
+            <div className="bg-white p-8 rounded-[40px] border border-slate-100 shadow-xl space-y-6">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-red-100 rounded-2xl text-red-600"><Zap size={20} fill="currentColor" /></div>
+                <h3 className="font-black text-slate-800 uppercase tracking-tight">Ticker Message Control</h3>
+              </div>
+              <textarea 
+                value={ticker}
+                onChange={(e) => setTicker(e.target.value)}
+                className="w-full bg-slate-50 p-6 rounded-[32px] border-2 border-slate-100 focus:border-blue-500 outline-none text-sm font-medium leading-relaxed"
+                rows={3}
+                placeholder="ম্যাসেজটি এখানে লিখুন..."
+              />
+              <Button onClick={onUpdateTicker} className="w-full py-5 rounded-[28px] shadow-lg shadow-blue-500/20">
+                Update Ticker Message
+              </Button>
+            </div>
+
+            <div className="bg-blue-600 p-8 rounded-[40px] text-white space-y-4">
+               <h3 className="font-black uppercase tracking-tight flex items-center gap-2"><Smartphone size={20} /> Website Export Info</h3>
+               <p className="text-[11px] font-medium leading-relaxed opacity-80">আপনি Hostinger-এ মেজবানি করার জন্য আপনার কোডটি 'Build' করে সেখানে আপলোড করতে পারেন। এতে আপনার কোনো খরচ হবে না।</p>
+            </div>
+          </div>
+        )}
+
+        {activeSubTab === 'doctors' && (
+          <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
+            <div className="flex justify-between items-center">
+               <h2 className="text-lg font-black text-slate-800 uppercase tracking-tight">Specialists List</h2>
+               <Button variant="success" className="px-6 py-2 rounded-xl text-[10px]">Add New</Button>
+            </div>
+            <div className="space-y-4">
+              {DOCTORS.map(d => (
+                <div key={d.id} className="bg-white p-4 rounded-[32px] border border-slate-100 flex justify-between items-center shadow-sm">
+                  <div className="flex items-center gap-4">
+                    <img src={d.image} className="w-12 h-12 rounded-2xl object-cover" referrerPolicy="no-referrer" />
+                    <div>
+                      <p className="text-sm font-black text-slate-800 leading-tight">{d.name}</p>
+                      <p className="text-[10px] text-slate-400 font-bold uppercase">{d.specialty}</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button className="p-2 bg-slate-100 rounded-xl text-slate-600 hover:bg-blue-100 hover:text-blue-600 transition-all"><Zap size={14} /></button>
+                    <button className="p-2 bg-slate-100 rounded-xl text-slate-600 hover:bg-red-100 hover:text-red-600 transition-all"><X size={14} /></button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {activeSubTab === 'orders' && (
+          <div className="text-center py-20 space-y-4">
+            <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto text-slate-300">
+              <MessageSquare size={32} />
+            </div>
+            <p className="text-sm font-black text-slate-400 uppercase tracking-widest">No Active Bookings</p>
+            <p className="text-[10px] text-slate-400 font-medium max-w-xs mx-auto">সবগুলো বুকিং এবং ল্যাব টেস্টের অর্ডার এখানে দেখা যাবে।</p>
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 
@@ -780,6 +1014,18 @@ export default function App() {
   };
 
   if (isLoading) return <div className="h-screen flex items-center justify-center font-black text-blue-600 animate-pulse">JB HEALTHCARE...</div>;
+
+  if (profile?.role === UserRole.ADMIN) {
+    return (
+      <AdminDashboard 
+        profile={profile} 
+        onLogout={logout} 
+        ticker={tickerMessage} 
+        setTicker={setTickerMessage} 
+        onUpdateTicker={updateTicker} 
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col max-w-lg mx-auto relative overflow-hidden shadow-2xl">
@@ -1511,6 +1757,9 @@ export default function App() {
            </div>
         </div>
       )}
+
+      <DownloadFAB />
+      <UpdatePrompt />
 
     </div>
   );

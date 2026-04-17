@@ -1,11 +1,11 @@
 
-const CACHE_NAME = 'jb-healthcare-v2';
+const CACHE_NAME = 'jb-healthcare-v3';
 const ASSETS = [
   './',
   './index.html',
   './manifest.json',
-  'https://cdn.tailwindcss.com',
-  'https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap'
+  '/index.tsx',
+  'https://cdn.tailwindcss.com'
 ];
 
 self.addEventListener('install', (event) => {
