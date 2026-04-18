@@ -1,20 +1,37 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# JB Healthcare - Hostinger Deployment Guide
 
-# Run and deploy your AI Studio app
+এই প্রোজেক্টটি আপনার হোস্টিংগার (Hostinger) হোস্টিং-এ চিরস্থায়ীভাবে চালানোর জন্য নিচের ধাপগুলো অনুসরণ করুন।
 
-This contains everything you need to run your app locally.
+## ১. ফাইল প্রস্তুতি (Build)
+- আপনি যদি এই কোডটি ডাউনলোড করেন, তবে প্রথমে `npm run build` কমান্ডটি চালান (যদি আপনার কম্পিউটারে Node.js থাকে)।
+- এটি একটি `dist` ফোল্ডার তৈরি করবে। এই ফোল্ডারের ফাইলগুলোই আপনাকে সার্ভারে আপলোড করতে হবে।
 
-View your app in AI Studio: https://ai.studio/apps/6ec8f52a-5e1d-4098-aa2b-7fa014924faa
+## ২. ডাটাবেস সেটআপ (MySQL)
+- আপনার হোস্টিংগার প্যানেলে যান।
+- একটি নতুন **MySQL Database** তৈরি করুন।
+- ডাটাবেসের নাম, ইউজারনেম এবং পাসওয়ার্ডটি নোট করে রাখুন।
 
-## Run Locally
+## ৩. API কনফিগারেশন
+- `api.php` ফাইলটি ওপেন করুন।
+- নিচের লাইনগুলো আপনার ডাটাবেস তথ্যের সাথে পরিবর্তন করুন:
+  ```php
+  $host = 'localhost';
+  $db   = 'আপনার_ডাটাবেস_নাম';
+  $user = 'আপনার_ডাটাবেস_ইউজার';
+  $pass = 'আপনার_ডাটাবেস_পাসওয়ার্ড';
+  ```
 
-**Prerequisites:**  Node.js
+## ৪. সার্ভারে আপলোড
+- হোস্টিংগার **File Manager** এ যান।
+- `public_html` ফোল্ডারের ভেতরে `dist` ফোল্ডারের সব ফাইল এবং `api.php` আপলোড করুন।
+- আপনার ডোমেইনটি (যেমন: `www.yourdomain.com`) ভিজিট করলেই আপনার অ্যাপটি চালু হয়ে যাবে।
 
+## ৫. অ্যাডমিন লগইন
+- অ্যাপে গিয়ে লগইন বাটনে ক্লিক করুন।
+- ইউজারনেম: `modaretor`
+- পাসওয়ার্ড: `jagad01750`
+- সফলভাবে লগইন হলে আপনি স্বয়ংক্রিয়ভাবে **Admin Dashboard** দেখতে পাবেন।
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+---
+শুভকামনা,
+JB Healthcare Team

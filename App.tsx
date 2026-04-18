@@ -104,10 +104,27 @@ const DownloadFAB: React.FC = () => {
   const [showTooltip, setShowTooltip] = useState(false);
 
   useEffect(() => {
-    // Show toolip after 3 seconds of page load
+    // Check if user has already interacted with the prompt
+    const promptSeen = localStorage.getItem('jb_healthcare_apk_prompt_seen');
+    if (promptSeen) return;
+
+    // Show tooltip after 3 seconds of page load for the first time
     const timer = setTimeout(() => setShowTooltip(true), 3000);
     return () => clearTimeout(timer);
   }, []);
+
+  const handleDismiss = () => {
+    setIsOpen(false);
+    setShowTooltip(false);
+    // Persist seen state so it doesn't auto-prompt again
+    localStorage.setItem('jb_healthcare_apk_prompt_seen', 'true');
+  };
+
+  const handleDownload = () => {
+    setIsOpen(false);
+    setShowTooltip(false);
+    localStorage.setItem('jb_healthcare_apk_prompt_seen', 'true');
+  };
 
   return (
     <div className="fixed bottom-24 right-6 z-[300]">
@@ -124,7 +141,7 @@ const DownloadFAB: React.FC = () => {
                 <Smartphone className="text-blue-600" size={24} />
               </div>
               <button 
-                onClick={() => { setIsOpen(false); setShowTooltip(false); }}
+                onClick={handleDismiss}
                 className="p-1 hover:bg-slate-50 rounded-full text-slate-400"
               >
                 <X size={18} />
@@ -142,13 +159,16 @@ const DownloadFAB: React.FC = () => {
             <div className="space-y-3">
               <a 
                 href="/downloads/jb-healthcare.apk" 
-                download
-                onClick={() => { setIsOpen(false); setShowTooltip(false); }}
+                download="jb-healthcare.apk"
+                onClick={handleDownload}
                 className="w-full bg-blue-600 text-white py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-3 shadow-lg shadow-blue-500/20 active:scale-95 transition-all"
               >
                 <Download size={16} /> সরাসরি APK ডাউনলোড করুন
               </a>
-              <div className="flex items-center justify-center gap-2 text-[8px] font-black text-slate-400 uppercase tracking-widest">
+              <p className="text-[8px] text-center text-rose-500 font-bold leading-tight">
+                *মোবাইলে ডাউনলোড না হলে নতুন ট্যাবে (Open in New Tab) ওপেন করুন।
+              </p>
+              <div className="flex items-center justify-center gap-2 text-[8px] font-black text-slate-400 uppercase tracking-widest pt-1 border-t border-slate-50">
                 <ShieldCheck size={10} /> Secure • Android Version v2.0
               </div>
             </div>
