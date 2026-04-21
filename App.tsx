@@ -906,6 +906,7 @@ export default function App() {
 
   const submitOrder = async () => {
     if (!user) {
+      alert('অর্ডার করতে দয়া করে লগইন করুন।');
       setShowAuthModal(true);
       return;
     }
@@ -925,10 +926,43 @@ export default function App() {
       sender_name: profile?.full_name || 'Guest',
       sender_contact: profile?.phone || '',
       trx_id: paymentType === 'offline' ? `OFFLINE-${Math.random().toString(36).substr(2, 6).toUpperCase()}` : trxId,
-      hospital_name: showPayment.hospitalName,
+      hospital_name: showPayment.hospitalName || '',
       status: 'pending'
     };
 
+    try {
+      // 1. Try to send to PHP API (Hostinger)
+      const phpResponse = await fetch('./api.php?path=orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newOrder)
+      });
+      
+      const resText = await phpResponse.text();
+      let resData;
+      try {
+        resData = JSON.parse(resText);
+      } catch (e) {
+        throw new Error("Invalid server response (PHP API)");
+      }
+      
+      if (resData.status === 'success') {
+        alert('অর্ডারটি সফল হয়েছে! মডারেটর কিছুক্ষণের মধ্যে যোগাযোগ করবেন।');
+        setShowPayment({ show: false, amount: 0, item: '', shipping: 0 });
+        setCart([]);
+        setTrxId('');
+        setPaymentType('online');
+        fetchUserData();
+        setIsProcessing(false);
+        return;
+      } else if (resData.error) {
+         throw new Error(resData.error);
+      }
+    } catch (e: any) {
+      console.log("PHP API failed:", e.message);
+    }
+
+    // 2. Fallback to Supabase if PHP API fails/missing
     const { error } = await supabase.from('orders').insert(newOrder);
     if (!error) {
       alert('অর্ডারটি সফল হয়েছে! মডারেটর কিছুক্ষণের মধ্যে যোগাযোগ করবেন।');
@@ -938,7 +972,8 @@ export default function App() {
       setPaymentType('online');
       fetchUserData();
     } else {
-      alert('অর্ডার সম্পন্ন করা যায়নি।');
+      console.error("Order error:", error);
+      alert('অর্ডার সম্পন্ন করা যায়নি। আপনার ইন্টারনেট সংযোগ চেক করুন।');
     }
     setIsProcessing(false);
   };

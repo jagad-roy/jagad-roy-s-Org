@@ -34,10 +34,26 @@ switch ($path) {
         
     case 'orders':
         if ($method === 'POST') {
-            $data = json_decode(file_get_contents('php://input'), true);
-            $stmt = $pdo->prepare("INSERT INTO orders (item_name, amount, user_email) VALUES (?, ?, ?)");
-            $stmt->execute([$data['item_name'], $data['amount'], $data['user_email']]);
+            $d = json_decode(file_get_contents('php://input'), true);
+            $stmt = $pdo->prepare("INSERT INTO orders (user_id, user_email, item_name, amount, shipping, payment_method, payment_type, sender_name, sender_contact, trx_id, hospital_name, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt->execute([
+                isset($d['user_id']) ? $d['user_id'] : 'guest',
+                isset($d['user_email']) ? $d['user_email'] : '',
+                isset($d['item_name']) ? $d['item_name'] : '',
+                isset($d['amount']) ? $d['amount'] : 0,
+                isset($d['shipping']) ? $d['shipping'] : 0,
+                isset($d['payment_method']) ? $d['payment_method'] : '',
+                isset($d['payment_type']) ? $d['payment_type'] : 'online',
+                isset($d['sender_name']) ? $d['sender_name'] : '',
+                isset($d['sender_contact']) ? $d['sender_contact'] : '',
+                isset($d['trx_id']) ? $d['trx_id'] : '',
+                isset($d['hospital_name']) ? $d['hospital_name'] : '',
+                isset($d['status']) ? $d['status'] : 'pending'
+            ]);
             echo json_encode(['status' => 'success']);
+        } else if ($method === 'GET') {
+            $stmt = $pdo->query("SELECT * FROM orders ORDER BY id DESC");
+            echo json_encode($stmt->fetchAll());
         }
         break;
 
