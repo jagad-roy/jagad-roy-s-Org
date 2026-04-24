@@ -4,7 +4,7 @@ import { UserRole, Doctor, Clinic, Medicine, Order, Profile, Prescription, LabTe
 import { DOCTORS, CLINICS, MEDICINES, EMERGENCY_SERVICES, DISTRICTS, LAB_TESTS, SPECIALTIES } from './constants';
 import { gemini } from './services/geminiService';
 import { supabase } from './services/supabaseClient';
-import { Share2, Bot, Video, Microscope, Ambulance, Star, ShieldCheck, Zap, MessageSquare, ArrowRight, X, Download, Smartphone } from 'lucide-react';
+import { Share2, Bot, Video, Microscope, Ambulance, Star, ShieldCheck, Zap, MessageSquare, ArrowRight, X, Download, Smartphone, Stethoscope } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 // --- UI Components ---
@@ -219,7 +219,7 @@ const AdminDashboard: React.FC<{ profile: Profile, onLogout: () => void, ticker:
       <div className="bg-white border-b px-6 flex gap-6 overflow-x-auto no-scrollbar">
         {[
           { id: 'overview', label: 'Overview', icon: <Zap size={14} /> },
-          { id: 'doctors', label: 'Specialists', icon: <Bot size={14} /> },
+          { id: 'doctors', label: 'Specialists', icon: <Stethoscope size={14} /> },
           { id: 'orders', label: 'Booking Orders', icon: <MessageSquare size={14} /> },
           { id: 'hospitals', label: 'Clinics', icon: <Microscope size={14} /> },
           { id: 'labtests', label: 'Lab Tests', icon: <Star size={14} /> }
@@ -357,35 +357,61 @@ const TodaysDoctorsBanner: React.FC<{ doctors: Doctor[] }> = ({ doctors }) => {
   if (todaysDocs.length === 0) return null;
 
   const currentDoc = todaysDocs[currentIndex];
+  const clinic = CLINICS.find(c => c.id === currentDoc.clinics[0]);
 
   return (
     <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="bg-slate-900 rounded-[32px] p-6 text-white relative overflow-hidden group cursor-pointer h-40 flex items-center"
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="bg-slate-900 rounded-[32px] p-6 text-white relative overflow-hidden h-44 flex items-center shadow-2xl border border-white/5"
     >
-      <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/20 rounded-full blur-3xl" />
+      <div className="absolute top-0 right-0 w-48 h-48 bg-blue-600/30 rounded-full blur-[80px] -mr-10 -mt-10" />
+      <div className="absolute bottom-0 left-0 w-32 h-32 bg-emerald-600/20 rounded-full blur-[60px] -ml-5 -mb-5" />
+      
       <AnimatePresence mode="wait">
         <motion.div
           key={currentDoc.id}
-          initial={{ opacity: 0, x: 20 }}
+          initial={{ opacity: 0, x: 40 }}
           animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -20 }}
-          transition={{ duration: 0.5 }}
+          exit={{ opacity: 0, x: -40 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
           className="relative z-10 flex items-center justify-between w-full"
         >
-          <div className="space-y-2 flex-1">
-            <div className="inline-flex items-center gap-2 bg-emerald-600 px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest">
-              <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" /> আজকের ডাক্তার
+          <div className="space-y-2 flex-1 pr-4">
+            <div className="flex items-center gap-2">
+              <div className="bg-emerald-600 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 shadow-lg shadow-emerald-900/40">
+                <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" /> আজকের ডাক্তার
+              </div>
+              <div className="bg-white/10 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest backdrop-blur-sm border border-white/10">
+                Live Now
+              </div>
             </div>
-            <h3 className="text-lg font-black tracking-tight">{currentDoc.name}</h3>
+            
+            <h3 className="text-xl font-black tracking-tight leading-tight">{currentDoc.name}</h3>
+            
             <div className="space-y-1">
-              <p className="text-[10px] text-blue-400 font-bold uppercase tracking-widest">{currentDoc.specialty}</p>
-              <p className="text-[10px] text-slate-400 font-medium">{currentDoc.schedule}</p>
+              <p className="text-[11px] text-blue-400 font-black uppercase tracking-widest">{currentDoc.specialty}</p>
+              <div className="flex flex-col gap-0.5">
+                <p className="text-[10px] text-slate-300 font-bold flex items-center gap-1.5 grayscale opacity-90">
+                  📍 {clinic?.name || 'চেম্বার'}
+                </p>
+                <p className="text-[10px] text-slate-300 font-bold flex items-center gap-1.5 grayscale opacity-90">
+                ⏰ {currentDoc.schedule}
+                </p>
+              </div>
             </div>
           </div>
-          <div className="w-24 h-24 bg-white/10 rounded-[32px] overflow-hidden border border-white/10 shadow-2xl ml-4">
-            <img src={currentDoc.image} alt={currentDoc.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+          
+          <div className="relative group">
+            <div className="absolute inset-0 bg-blue-600/30 blur-xl rounded-full scale-90 group-hover:scale-110 transition-transform" />
+            <div className="relative w-28 h-28 p-1.5 bg-white/10 rounded-[40px] backdrop-blur-xl border border-white/20 shadow-2xl overflow-hidden">
+              <img 
+                src={currentDoc.image} 
+                alt={currentDoc.name} 
+                className="w-full h-full object-cover rounded-[32px]" 
+                referrerPolicy="no-referrer" 
+              />
+            </div>
           </div>
         </motion.div>
       </AnimatePresence>
@@ -394,109 +420,6 @@ const TodaysDoctorsBanner: React.FC<{ doctors: Doctor[] }> = ({ doctors }) => {
 };
 
 // --- AI Doctor Component ---
-
-const AIDoctor: React.FC<{ onClose: () => void }> = ({ onClose }) => {
-  const [query, setQuery] = useState('');
-  const [response, setResponse] = useState('');
-  const [isThinking, setIsThinking] = useState(false);
-  const chatEndRef = useRef<HTMLDivElement>(null);
-
-  const handleConsult = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!query.trim()) return;
-    const currentQuery = query;
-    setQuery(''); // Clear input immediately for better UX
-    setIsThinking(true);
-    setResponse('');
-    const res = await gemini.consultHealth(currentQuery);
-    setResponse(res || "দুঃখিত, কোনো উত্তর পাওয়া যায়নি। আবার চেষ্টা করুন।");
-    setIsThinking(false);
-  };
-
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [response, isThinking]);
-
-  return (
-    <motion.div 
-      initial={{ opacity: 0, y: 100 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 100 }}
-      className="fixed inset-0 z-[150] bg-white flex flex-col"
-    >
-      <header className="px-6 py-4 border-b flex justify-between items-center bg-blue-600 text-white">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-            <Bot size={24} />
-          </div>
-          <div>
-            <h2 className="text-sm font-black uppercase tracking-widest">AI Doctor</h2>
-            <p className="text-[8px] opacity-70 font-bold uppercase">Powered by Gemini AI</p>
-          </div>
-        </div>
-        <button onClick={onClose} className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center">
-          <X size={20} />
-        </button>
-      </header>
-
-      <div className="flex-1 overflow-y-auto p-6 space-y-6 no-scrollbar">
-        <div className="bg-slate-100 p-4 rounded-2xl rounded-tl-none max-w-[85%]">
-          <p className="text-xs font-bold text-slate-700 leading-relaxed">
-            আসসালামু আলাইকুম! আমি জেবি হেলথকেয়ারের এআই ডাক্তার। আপনার কি কোনো স্বাস্থ্য সমস্যা আছে? আমাকে বিস্তারিত বলুন।
-          </p>
-        </div>
-
-        {query && (
-          <div className="bg-blue-600 p-4 rounded-2xl rounded-tr-none max-w-[85%] ml-auto text-white">
-            <p className="text-xs font-bold leading-relaxed">{query}</p>
-          </div>
-        )}
-
-        {isThinking && (
-          <div className="bg-slate-100 p-4 rounded-2xl rounded-tl-none max-w-[85%] flex items-center gap-2">
-            <div className="flex gap-1">
-              <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce"></div>
-              <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce delay-75"></div>
-              <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce delay-150"></div>
-            </div>
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Thinking...</span>
-          </div>
-        )}
-
-        {response && (
-          <div className="bg-slate-100 p-5 rounded-2xl rounded-tl-none max-w-[95%] border border-blue-100 shadow-sm">
-            <div className="prose prose-sm max-w-none text-slate-700 text-xs font-medium leading-relaxed whitespace-pre-line">
-              {response}
-            </div>
-          </div>
-        )}
-        <div ref={chatEndRef} />
-      </div>
-
-      <div className="p-6 border-t bg-slate-50">
-        <form onSubmit={handleConsult} className="flex gap-3">
-          <input 
-            type="text" 
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="আপনার সমস্যার কথা লিখুন..."
-            className="flex-1 bg-white border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-bold outline-none focus:border-blue-600 transition-all"
-          />
-          <button 
-            type="submit" 
-            disabled={isThinking || !query.trim()}
-            className="w-14 h-14 bg-blue-600 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/20 active:scale-90 transition-all disabled:opacity-50"
-          >
-            <Zap size={24} fill="currentColor" />
-          </button>
-        </form>
-        <p className="text-[8px] text-slate-400 text-center mt-4 font-bold uppercase tracking-widest">
-          সতর্কবার্তা: এটি একটি এআই পরামর্শ, সরাসরি ডাক্তারের বিকল্প নয়।
-        </p>
-      </div>
-    </motion.div>
-  );
-};
 
 // --- Landing Page Component ---
 
@@ -643,7 +566,6 @@ const LandingPage: React.FC<{ onStart: () => void }> = ({ onStart }) => {
 
 export default function App() {
   const [showLanding, setShowLanding] = useState(true);
-  const [showAIDoctor, setShowAIDoctor] = useState(false);
   const [activeTab, setActiveTab] = useState('home');
   const [homeSubCategory, setHomeSubCategory] = useState<'doctors' | 'hospitals' | 'labtests' | 'emergency'>('doctors');
   const [user, setUser] = useState<any>(null);
@@ -1148,9 +1070,7 @@ export default function App() {
       </AnimatePresence>
 
       <AnimatePresence>
-        {showAIDoctor && (
-          <AIDoctor onClose={() => setShowAIDoctor(false)} />
-        )}
+
       </AnimatePresence>
 
       {/* Ticker */}
@@ -1201,7 +1121,7 @@ export default function App() {
                    className={`flex flex-col items-center gap-1.5 p-3 rounded-2xl transition-all ${homeSubCategory === cat.id ? 'bg-blue-600 text-white shadow-lg scale-105' : 'bg-white text-slate-400 border border-slate-50'}`}
                  >
                    <span className="text-xl">{cat.icon}</span>
-                   <span className="text-[8px] font-black uppercase tracking-wider text-center">{cat.label}</span>
+                   <span className="text-[10px] font-black uppercase tracking-widest text-center">{cat.label}</span>
                  </button>
                ))}
             </div>
@@ -1272,7 +1192,10 @@ export default function App() {
                                     className={`flex flex-col items-center gap-2 min-w-[75px] transition-all duration-300 ${selectedSpecialty === spec.name ? 'scale-110 active:scale-100' : 'opacity-40 hover:opacity-100'}`}
                                 >
                                     <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-xl shadow-xl transition-all border-2 ${selectedSpecialty === spec.name ? 'bg-blue-600 text-white border-blue-400' : 'bg-white border-slate-100'}`}>{spec.icon}</div>
-                                    <span className={`text-[9px] font-black uppercase tracking-tighter text-center ${selectedSpecialty === spec.name ? 'text-blue-600' : 'text-slate-400'}`}>{spec.name}</span>
+                                    <div className="flex flex-col items-center">
+                                      <span className={`text-[11px] font-black uppercase tracking-tight text-center leading-none ${selectedSpecialty === spec.name ? 'text-blue-600' : 'text-slate-900 border-b-2 border-transparent'}`}>{spec.name}</span>
+                                      <span className={`text-[10px] font-black text-center leading-none mt-2 ${selectedSpecialty === spec.name ? 'text-blue-500' : 'text-slate-700'}`}>{spec.bnName}</span>
+                                    </div>
                                 </button>
                             ))}
                         </div>
@@ -1281,51 +1204,59 @@ export default function App() {
                     </div>
 
                     <div className="space-y-4 pb-36">
-                       {filteredDoctors.length > 0 ? filteredDoctors.map(d => (
-                         <Card key={d.id} className="flex gap-4 items-center border-l-4 border-l-blue-600 hover:border-l-8 hover:shadow-lg transition-all">
-                           <img src={d.image} className="w-20 h-20 rounded-3xl object-cover border bg-slate-50 shadow-sm" />
-                           <div className="flex-1">
-                             <div className="flex justify-between items-start">
-                                <h4 className="font-black text-[14px] text-slate-800 leading-tight">{d.name}</h4>
-                                <span className="text-[10px] font-bold bg-slate-50 px-2 py-0.5 rounded-lg border border-slate-100">⭐ {d.rating}</span>
-                             </div>
-                             <p className="text-[10px] text-blue-600 font-black uppercase mt-1 tracking-wider">{d.specialty}</p>
-                             <p className="text-[9px] text-slate-400 font-bold leading-snug mt-1 italic">{d.degree}</p>
-                             <div className="flex justify-between items-center mt-3 pt-3 border-t border-slate-50">
-                                <div className="flex flex-col">
-                                  <span className="text-[9px] font-black text-emerald-600 flex items-center gap-1.5">
-                                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                                      {d.schedule}
-                                  </span>
-                                  {d.consultationFee && <span className="text-[10px] font-black text-blue-600 mt-0.5">Fee: ৳{d.consultationFee}</span>}
-                                </div>
-                                <div className="flex gap-2">
-                                  {d.isVideoConsultant && (
-                                    <button onClick={() => setShowPayment({show: true, amount: d.consultationFee || 500, item: `Video Consult: ${d.name}`, shipping: 0, isVideo: true})} className="text-[10px] bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2.5 rounded-xl font-black shadow-lg shadow-emerald-500/20 active:scale-95 transition-all flex items-center gap-1">
-                                      <span>📹</span> Video
+                       {filteredDoctors.length > 0 ? filteredDoctors.map(d => {
+                         const hospital = hospitals.find(h => h.id === d.clinics[0]);
+                         return (
+                           <Card key={d.id} className="flex gap-4 items-center border-l-4 border-l-blue-600 hover:border-l-8 hover:shadow-lg transition-all">
+                             <img src={d.image} className="w-20 h-20 rounded-3xl object-cover border bg-slate-50 shadow-sm" referrerPolicy="no-referrer" />
+                             <div className="flex-1">
+                               <div className="flex justify-between items-start">
+                                  <h4 className="font-black text-[14px] text-slate-800 leading-tight">{d.name}</h4>
+                                  <span className="text-[10px] font-bold bg-slate-50 px-2 py-0.5 rounded-lg border border-slate-100">⭐ {d.rating}</span>
+                               </div>
+                               <p className="text-[10px] text-blue-600 font-black uppercase mt-1 tracking-wider">{d.specialty}</p>
+                               <div className="flex flex-col gap-0.5 mt-1">
+                                 <p className="text-[9px] text-slate-400 font-bold leading-snug italic">{d.degree}</p>
+                                 <p className="text-[10px] text-slate-500 font-black flex items-center gap-1 mt-0.5">
+                                   <span className="opacity-80">📍</span> {hospital?.name || 'চেম্বার'}
+                                 </p>
+                               </div>
+                               <div className="flex justify-between items-center mt-3 pt-3 border-t border-slate-50">
+                                  <div className="flex flex-col">
+                                    <span className="text-[9px] font-black text-emerald-600 flex items-center gap-1.5">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                        {d.schedule}
+                                    </span>
+                                    {d.consultationFee && <span className="text-[10px] font-black text-blue-600 mt-0.5">Fee: ৳{d.consultationFee}</span>}
+                                  </div>
+                                  <div className="flex gap-2">
+                                    {d.isVideoConsultant && (
+                                      <button onClick={() => setShowPayment({show: true, amount: d.consultationFee || 500, item: `Video Consult: ${d.name}`, shipping: 0, isVideo: true})} className="text-[10px] bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2.5 rounded-xl font-black shadow-lg shadow-emerald-500/20 active:scale-95 transition-all flex items-center gap-1">
+                                        <span>📹</span> Video
+                                      </button>
+                                    )}
+                                    <button 
+                                      onClick={() => {
+                                        const h = hospitals.find(h => h.id === selectedHospitalId) || hospitals.find(h => h.id === d.clinics[0]);
+                                        setShowPayment({
+                                          show: true, 
+                                          amount: d.consultationFee || 500, 
+                                          item: `Consultation: ${d.name}`, 
+                                          shipping: 0, 
+                                          isClinic: true,
+                                          hospitalName: h?.name
+                                        });
+                                      }} 
+                                      className="text-[10px] bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-black shadow-lg shadow-blue-500/20 active:scale-95 transition-all"
+                                    >
+                                      সিরিয়াল নিন
                                     </button>
-                                  )}
-                                  <button 
-                                    onClick={() => {
-                                      const hospital = hospitals.find(h => h.id === selectedHospitalId) || hospitals.find(h => h.id === d.clinics[0]);
-                                      setShowPayment({
-                                        show: true, 
-                                        amount: d.consultationFee || 500, 
-                                        item: `Consultation: ${d.name}`, 
-                                        shipping: 0, 
-                                        isClinic: true,
-                                        hospitalName: hospital?.name
-                                      });
-                                    }} 
-                                    className="text-[10px] bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-black shadow-lg shadow-blue-500/20 active:scale-95 transition-all"
-                                  >
-                                    সিরিয়াল নিন
-                                  </button>
-                                </div>
+                                  </div>
+                               </div>
                              </div>
-                           </div>
-                         </Card>
-                       )) : (
+                           </Card>
+                         );
+                       }) : (
                          <div className="text-center py-20 bg-white rounded-[40px] border-2 border-dashed border-slate-100 flex flex-col items-center">
                            <div className="text-5xl mb-4 animate-bounce">🧐</div>
                            <p className="text-[12px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">No Specialist Found</p>
