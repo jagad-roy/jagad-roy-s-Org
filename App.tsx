@@ -340,6 +340,59 @@ const Input: React.FC<{
   </div>
 );
 
+// --- Todays Doctors Banner Component ---
+
+const TodaysDoctorsBanner: React.FC<{ doctors: Doctor[] }> = ({ doctors }) => {
+  const todaysDocs = useMemo(() => doctors.filter(d => d.availableToday), [doctors]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    if (todaysDocs.length <= 1) return;
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % todaysDocs.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [todaysDocs.length]);
+
+  if (todaysDocs.length === 0) return null;
+
+  const currentDoc = todaysDocs[currentIndex];
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-slate-900 rounded-[32px] p-6 text-white relative overflow-hidden group cursor-pointer h-40 flex items-center"
+    >
+      <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/20 rounded-full blur-3xl" />
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={currentDoc.id}
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          transition={{ duration: 0.5 }}
+          className="relative z-10 flex items-center justify-between w-full"
+        >
+          <div className="space-y-2 flex-1">
+            <div className="inline-flex items-center gap-2 bg-emerald-600 px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest">
+              <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" /> আজকের ডাক্তার
+            </div>
+            <h3 className="text-lg font-black tracking-tight">{currentDoc.name}</h3>
+            <div className="space-y-1">
+              <p className="text-[10px] text-blue-400 font-bold uppercase tracking-widest">{currentDoc.specialty}</p>
+              <p className="text-[10px] text-slate-400 font-medium">{currentDoc.schedule}</p>
+            </div>
+          </div>
+          <div className="w-24 h-24 bg-white/10 rounded-[32px] overflow-hidden border border-white/10 shadow-2xl ml-4">
+            <img src={currentDoc.image} alt={currentDoc.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+          </div>
+        </motion.div>
+      </AnimatePresence>
+    </motion.div>
+  );
+};
+
 // --- AI Doctor Component ---
 
 const AIDoctor: React.FC<{ onClose: () => void }> = ({ onClose }) => {
@@ -521,7 +574,7 @@ const LandingPage: React.FC<{ onStart: () => void }> = ({ onStart }) => {
 
         <div className="grid grid-cols-1 gap-6">
           {[
-            { icon: <Bot className="text-blue-600" />, title: "AI ডাক্তার পরামর্শ", desc: "যেকোনো স্বাস্থ্য সমস্যায় তাৎক্ষণিক এআই পরামর্শ নিন।" },
+            { icon: <ShieldCheck className="text-blue-600" />, title: "দক্ষ বিশেষজ্ঞ ডক্টর", desc: "নীলফামারীর সেরা বিশেষজ্ঞ ডক্টরদের সিরিয়াল নিন সহজেই।" },
             { icon: <Video className="text-emerald-600" />, title: "ভিডিও কনসাল্টেশন", desc: "দেশের সেরা বিশেষজ্ঞ ডাক্তারদের সাথে সরাসরি কথা বলুন।" },
             { icon: <Microscope className="text-indigo-600" />, title: "ল্যাব টেস্ট বুকিং", desc: "ঘরে বসেই ল্যাব টেস্ট বুক করুন এবং রিপোর্ট পান।" },
             { icon: <Ambulance className="text-red-600" />, title: "জরুরি SOS সেবা", desc: "২৪/৭ জরুরি অ্যাম্বুলেন্স এবং অক্সিজেন সাপোর্ট।" }
@@ -559,7 +612,7 @@ const LandingPage: React.FC<{ onStart: () => void }> = ({ onStart }) => {
 
           <div className="space-y-6 text-left">
             {[
-              { name: "রাহাত হোসেন", text: "এআই ডাক্তার ফিচারটি অসাধারণ! অনেক দ্রুত পরামর্শ পাওয়া যায়।" },
+              { name: "রাহাত হোসেন", text: "ডাক্তারদের সিরিয়াল নেওয়ার জন্য এই অ্যাপটি অনেক কাজের। খুব সহজে অ্যাপয়েন্টমেন্ট পেয়েছি।" },
               { name: "সুমাইয়া আক্তার", text: "ভিডিও কনসাল্টেশন করে অনেক উপকৃত হয়েছি। ডাক্তার খুব ভালো ছিলেন।" }
             ].map((r, i) => (
               <div key={i} className="bg-white/5 p-6 rounded-[32px] border border-white/10">
@@ -1153,27 +1206,8 @@ export default function App() {
                ))}
             </div>
 
-            {/* AI Doctor Banner */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-slate-900 rounded-[32px] p-6 text-white relative overflow-hidden group cursor-pointer"
-              onClick={() => setShowAIDoctor(true)}
-            >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/20 rounded-full blur-3xl group-hover:bg-blue-600/40 transition-all duration-500" />
-              <div className="relative z-10 flex items-center justify-between">
-                <div className="space-y-2">
-                  <div className="inline-flex items-center gap-2 bg-blue-600 px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest">
-                    <Zap size={10} fill="currentColor" /> New Feature
-                  </div>
-                  <h3 className="text-lg font-black tracking-tight">AI ডাক্তারের পরামর্শ নিন</h3>
-                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">তাৎক্ষণিক স্বাস্থ্য সমাধান</p>
-                </div>
-                <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center border border-white/10 group-hover:scale-110 transition-transform">
-                  <Bot size={32} className="text-blue-400" />
-                </div>
-              </div>
-            </motion.div>
+            {/* Today's Doctors Banner */}
+            <TodaysDoctorsBanner doctors={doctors} />
 
             <div className="space-y-6">
                <div className="flex justify-between items-center bg-slate-100/50 p-2 rounded-2xl">
