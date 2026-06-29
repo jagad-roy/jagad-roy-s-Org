@@ -1610,6 +1610,14 @@ export default function App() {
             </div>
           </div>
         )}
+
+        {/* Developer Footer */}
+        <div className="mt-12 mb-8 text-center pb-24">
+          <div className="inline-flex items-center gap-2 bg-white px-5 py-3 rounded-2xl shadow-sm border border-slate-100 text-slate-600 text-xs font-medium">
+            <span className="text-base">💻</span>
+            <span>Developed by <strong className="font-extrabold text-slate-900">JB Roy</strong></span>
+          </div>
+        </div>
       </main>
 
       {/* Modern Floating Navigation Bar */}
